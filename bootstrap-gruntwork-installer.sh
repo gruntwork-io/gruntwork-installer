@@ -18,7 +18,7 @@
 
 set -e
 
-readonly BIN_DIR="/usr/bin"
+readonly BIN_DIR="/usr/local/bin"
 
 readonly DEFAULT_FETCH_VERSION="v0.0.3"
 readonly FETCH_DOWNLOAD_URL_BASE="https://github.com/gruntwork-io/fetch/releases/download"
@@ -56,14 +56,17 @@ function command_exists {
 function download_url_to_file {
   local readonly url="$1"
   local readonly file="$2"
+  local readonly tmp_path=$(mktemp "/tmp/gruntwork-bootstrap-download-XXXXXX")
 
-  echo "Downloading $url to $file"
+  echo "Downloading $url to $tmp_path"
   if $(command_exists "curl"); then
-    local readonly status_code=$(curl -L -s -w '%{http_code}' -o "$file" "$url")
+    local readonly status_code=$(curl -L -s -w '%{http_code}' -o "$tmp_path" "$url")
     if [[ "$status_code" != "200" ]]; then
       echo "ERROR: Expected status code 200 but got $status_code when downloading $url"
       exit 1
     fi
+    echo "Moving $tmp_path to $file"
+    sudo mv -f "$tmp_path" "$file"
   else
     echo "ERROR: curl is not installed. Cannot download $url."
     exit 1
@@ -107,7 +110,7 @@ function download_and_install {
   local readonly install_path="$2"
 
   download_url_to_file "$url" "$install_path"
-  chmod 0755 "$install_path"
+  sudo chmod 0755 "$install_path"
 }
 
 function install_fetch {
