@@ -50,6 +50,7 @@ function print_usage {
   echo "    curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version 0.0.3"
 }
 
+# http://stackoverflow.com/questions/592620/check-if-a-program-exists-from-a-bash-script
 function command_exists {
   local readonly cmd="$1"
   type "$cmd" > /dev/null 2>&1
