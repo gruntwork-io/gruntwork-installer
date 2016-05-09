@@ -19,6 +19,7 @@
 set -e
 
 readonly BIN_DIR="/usr/local/bin"
+readonly USER_DATA_DIR="/etc/user-data"
 
 readonly DEFAULT_FETCH_VERSION="v0.0.3"
 readonly FETCH_DOWNLOAD_URL_BASE="https://github.com/gruntwork-io/fetch/releases/download"
@@ -38,6 +39,7 @@ function print_usage {
   echo
   echo -e "  --version\t\tRequired. The version of $GRUNTWORK_INSTALLER_SCRIPT_NAME to install (e.g. 0.0.3)."
   echo -e "  --fetch-version\tOptional. The version of fetch to install. Default: $DEFAULT_FETCH_VERSION."
+  echo -e "  --user-data-owner\tOptional. The user who shown own the $USER_DATA_DIR folder. Default: (current user)."
   echo
   echo "Examples:"
   echo
@@ -150,9 +152,31 @@ function assert_not_empty {
   fi
 }
 
+function create_user_data_folder {
+  local readonly user_data_folder="$1"
+  local readonly user_data_folder_owner="$2"
+  local readonly user_data_folder_readme="$user_data_folder/README.txt"
+
+  echo "Creating $user_data_folder as a place to store scripts intended to be run in the User Data of an EC2 instance during boot"
+  sudo mkdir -p "$user_data_folder"
+
+sudo tee "$user_data_folder_readme" > /dev/null <<EOF
+The /etc/user-data folder contains scripts that should be executed while an EC2 instance is booting as part of its
+User Data (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) configuration.
+
+This folder is not an industry standard, but a convention we use at  Gruntwork (http://www.gruntwork.io) make User Data
+scripts manageable. Many of the modules in Script Modules (https://github.com/gruntwork-io/script-modules) need not
+only to be installed, but also to execute while a server is booting, and instead of scattering them in random locations
+all over the file system, /etc/user-data gives us a single, common place to put them all.
+EOF
+
+  sudo chown -R "$user_data_folder_owner" "$user_data_folder"
+}
+
 function bootstrap {
   local fetch_version="$DEFAULT_FETCH_VERSION"
   local installer_version=""
+  local user_data_folder_owner=$(id -u -n)
 
   while [[ $# > 0 ]]; do
     local key="$1"
@@ -164,6 +188,10 @@ function bootstrap {
         ;;
       --fetch-version)
         fetch_version="$2"
+        shift
+        ;;
+      --user-data-owner)
+        user_data_folder_owner="$2"
         shift
         ;;
       --help)
@@ -182,10 +210,12 @@ function bootstrap {
 
   assert_not_empty "--version" "$installer_version"
   assert_not_empty "--fetch-version" "$fetch_version"
+  assert_not_empty "--user-data-owner" "$user_data_folder_owner"
 
   echo "Installing $GRUNTWORK_INSTALLER_SCRIPT_NAME..."
   install_fetch "$FETCH_INSTALL_PATH" "$fetch_version"
   install_gruntwork_installer "$GRUNTWORK_INSTALLER_INSTALL_PATH" "$installer_version"
+  create_user_data_folder "$USER_DATA_DIR" "$user_data_folder_owner"
   echo "Success!"
 }
 
