@@ -11,7 +11,7 @@
 #
 # So instead, we recommend that clients use this tiny bootstrap script as a one-liner:
 #
-# curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash -s --version=0.0.12
+# curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash -s --version 0.0.12
 #
 # You can copy this one-liner into your Packer and Docker templates and immediately after, start using the
 # gruntwork-install command.
