@@ -1,0 +1,177 @@
+#!/bin/bash
+#
+# This script downloads a Gruntwork Script Module from https://github.com/gruntwork-io/script-modules using fetch
+# (https://github.com/gruntwork-io/fetch), and then runs it. The main motivation in writing it is to make installing
+# Gruntwork Script Modules feel as easy as installing a package using apt-get, brew, or yum.
+#
+# Note that if the user specifies neither --tag nor --branch, the latest tag is downloaded.
+#
+
+set -e
+
+readonly SCRIPT_MODULES_REPO="https://github.com/gruntwork-io/script-modules"
+readonly MODULES_DIR="modules"
+
+readonly MODULES_DOWNLOAD_DIR="/tmp/gruntwork-script-modules"
+readonly MODULE_INSTALL_FILE_NAME="install.sh"
+
+function print_usage {
+  echo
+  echo "Usage: gruntwork-install [OPTIONS]"
+  echo
+  echo "Download a Gruntwork Script Module from https://github.com/gruntwork-io/script-modules and install it."
+  echo
+  echo "Options:"
+  echo
+  echo -e "  --module-name\t\tRequired. The name of the Script Module to install. Must be a folder within the $MODULES_DIR directory of $SCRIPT_MODULES_REPO."
+  echo -e "  --tag\t\t\tRequired. The version of the Script Module to install. Follows the syntax described at https://github.com/gruntwork-io/fetch#version-constraint-operators."
+  echo -e "  --branch\t\tOptional. Download the latest commit from this branch. This is an alternative to --tag for development purposes."
+  echo -e "  --module-param\tOptional. A key-value pair of the format key=value you wish to pass to the module as a parameter. May be used multiple times."
+  echo
+  echo "Example:"
+  echo
+  echo "  gruntwork-install --module-name 'vault-ssh-helper' --tag '~>0.0.3' --module-param 'install-dir=/opt/vault-ssh-helper' --module-param 'owner=ubuntu'"
+  echo
+}
+
+# Assert that a given binary is installed on this box
+function assert_is_installed {
+  local readonly name="$1"
+
+  if [[ ! $(command -v ${name}) ]]; then
+    echo "ERROR: The binary '$name' is required by this script but is not installed or in the system's PATH."
+    exit 1
+  fi
+}
+
+function assert_not_empty {
+  local readonly arg_name="$1"
+  local readonly arg_value="$2"
+
+  if [[ -z "$arg_value" ]]; then
+    echo "ERROR: The value for '$arg_name' cannot be empty"
+    print_usage
+    exit 1
+  fi
+}
+
+function assert_env_var_not_empty {
+  local readonly var_name="$1"
+  local readonly var_value="${!var_name}"
+
+  if [[ -z "$var_value" ]]; then
+    echo "ERROR. Required environment $var_name not set."
+    exit 1
+  fi
+}
+
+# Download the files of the given Script Module using fetch (https://github.com/gruntwork-io/fetch)
+function fetch_script_module {
+  local readonly module_name="$1"
+  local readonly tag="$2"
+  local readonly branch="$3"
+  local readonly github_token="$4"
+  local readonly download_path="$5"
+
+  # We want to make sure that all folders down to $download_path/$module_name exists, but that $download_path/$module_name itself is empty.
+  mkdir -p "$download_path/$module_name/"
+  rm -Rf "$download_path/$module_name/"
+
+  # Note that fetch can safely handle blank arguments for --tag or --branch
+  # If both --tag and --branch are specified, --branch will be used
+  # TODO: fetch should read GITHUB_OAUTH_TOKEN as an environment variable too
+  fetch --repo="$SCRIPT_MODULES_REPO" --tag="$tag" --branch="$branch" --github-oauth-token="$github_token" "/modules/$module_name" "$download_path/$module_name" >/dev/null
+}
+
+# Validate that at least one file was downloaded from the module; otherwise throw an error.
+function validate_module {
+  local readonly module_name="$1"
+  local readonly download_path="$2"
+
+  if [[ ! -e "$download_path/$module_name" ]]; then
+    echo "ERROR: No files were downloaded. Are you sure \"$module_name\" is a valid Script Module in $SCRIPT_MODULES_REPO?"
+    exit 1
+  fi
+}
+
+# Take in an array of key-val pairs in this format:
+#   module_params[0] = "key1=value1"
+#   module_params[1] = "key2=value2"
+# .. and convert it to the format that Gruntwork bash scripts expect:
+#   --key1 value1 --key2 value2
+function convert_module_params_format {
+    local readonly module_params=("${@}")
+
+    module_params_formatted=""
+    for key_val_expression in "${module_params[@]}"; do
+       key="${key_val_expression%=*}"
+       val="${key_val_expression#*=}"
+       module_params_formatted="--${key} ${val} ${module_params_formatted}"
+    done
+
+    echo $module_params_formatted
+}
+
+function run_module {
+  local readonly module_name="$1"
+  shift
+  local readonly module_params=($@)
+  local readonly module_params_formatted=$(convert_module_params_format "${module_params[@]}")
+
+  chmod -R u+x "${MODULES_DOWNLOAD_DIR}/${module_name}"
+  eval "${MODULES_DOWNLOAD_DIR}/${module_name}/${MODULE_INSTALL_FILE_NAME} ${module_params_formatted}"
+}
+
+function install_script_module {
+  local tag=""
+  local branch=""
+  local module_name=""
+  local module_params=()
+
+  while [[ $# > 0 ]]; do
+    local key="$1"
+
+    case "$key" in
+      --tag)
+        tag="$2"
+        shift
+        ;;
+      --branch)
+        branch="$2"
+        shift
+        ;;
+      --module-name)
+        module_name="$2"
+        shift
+        ;;
+      --module-param)
+        module_param="$2"
+        module_params+=("$module_param")
+        shift
+        ;;
+      --help)
+        print_usage
+        exit
+        ;;
+      *)
+        echo "ERROR: Unrecognized option: $key"
+        print_usage
+        exit 1
+        ;;
+    esac
+
+    shift
+  done
+
+  assert_is_installed fetch
+  assert_not_empty "--module-name" "$module_name"
+  assert_env_var_not_empty "GITHUB_OAUTH_TOKEN"
+
+  echo "Installing $module_name..."
+  fetch_script_module "$module_name" "$tag" "$branch" "$GITHUB_OAUTH_TOKEN" "$MODULES_DOWNLOAD_DIR"
+  validate_module "$module_name" "$MODULES_DOWNLOAD_DIR"
+  run_module "$module_name" "${module_params[@]}"
+  echo "Success!"
+}
+
+install_script_module "$@"
