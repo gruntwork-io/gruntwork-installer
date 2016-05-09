@@ -1,0 +1,7 @@
+installer:
+  image: gruntwork/gruntwork-installer
+  volumes:
+    - ../:/src
+    - .:/test
+  environment:
+    - GITHUB_OAUTH_TOKEN

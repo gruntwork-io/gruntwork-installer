@@ -110,6 +110,19 @@ all there is to it.
 That means that to add a new module to script-modules, all you have to do is include an `install.sh` script and it'll
 automatically be installable!
 
+## Running tests
+
+The tests for this repo are defined in the `test` folder. They are designed to run in a Docker container so that you
+do not repeatedly dirty up your local OS while testing. We've defined a `test/docker-compose.yml` file as a convenient
+way to expose the environment variables we need for testing and to mount local directories as volumes for rapid
+iteration.
+
+To run the tests:
+
+1. Set your [GitHub access token](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) as
+   the environment variable `GITHUB_OAUTH_TOKEN`.
+1. `./_ci/run-tests.sh`
+
 ## Is it safe to pipe URLs into bash?
 
 Are you worried that our install instructions tell you to pipe a URL into bash? Although this approach has seen some
@@ -143,4 +156,3 @@ that'll happen when you execute it is a harmless syntax error.
 
 1. Add support for a `--version` flag to `bootstrap-gruntwork-installer.sh` and `gruntwork-install`.
 1. Configure a CI build to automatically set the `--version` flag for each release.
-1. Add automated tests for this repo.
