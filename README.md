@@ -96,6 +96,20 @@ and then uses it to install several modules:
 }
 ```
 
+## How Gruntwork modules work
+
+`gruntwork-install` is a fairly simple script that does the following:
+
+1. Uses [fetch](https://github.com/gruntwork-io/fetch) to download the version of the module requested from
+   [script-modules](https://github.com/gruntwork-io/script-modules).
+1. Runs the `install.sh` script inside that module.
+
+Future versions of `gruntwork-install` may do more (e.g. verify checksums, manage dependencies), but for now, that's
+all there is to it.
+
+That means that to add a new module to script-modules, all you have to do is include an `install.sh` script and it'll
+automatically be installable!
+
 ## Is it safe to pipe URLs into bash?
 
 Are you worried that our install instructions tell you to pipe a URL into bash? Although this approach has seen some
