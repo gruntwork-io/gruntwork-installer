@@ -20,6 +20,8 @@ curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/mast
 Notice the `--version` parameter at the end where you specify which version of `gruntwork-install` to install. See the
 [releases](/releases) page for all available versions.
 
+For paranoid security folks, see [is it safe to pipe URLs into bash?](#is-it-safe-to-pipe-urls-into-bash) below.
+
 ## Using gruntwork-install
 
 #### Authentication
@@ -92,3 +94,32 @@ and then uses it to install several modules:
   }]
 }
 ```
+
+## Is it safe to pipe URLs into bash?
+
+Are you worried that our install instructions tell you to pipe a URL into bash? Although this approach has seen some
+[backlash](https://news.ycombinator.com/item?id=6650987), we believe that the convenience of a one-line install
+outweighs the minimal security risks. Below is a brief discussion of the most commonly discussed risks and what you can
+do about them.
+
+#### Risk #1: You don't know what the script is doing, so you shouldn't blindly execute it.
+
+This is true of *all* installers. For example, have you ever inspected the install code before running `apt-get install`
+or `brew install` or double cliking a `.dmg` or `.exe` file? If anything, a shell script is the most transparent
+installer out there, as it's one of the few that allows you to inspect the code (feel free to do so, as this script is
+open source!). The reality is that you either trust the developer or you don't. And eventually, you automate the
+install process anyway, at which point manual inspection isn't a possibility anyway.
+
+#### Risk #2: The download URL could be hijacked for malicious code.
+
+This is unlikely, as it is an https URL, and your download program (e.g. `curl`) should be verifying SSL certs. That
+said, Certificate Authorities have been hacked in the past, and if that is a major concern for you, feel free to copy
+the bootstrap code into your own codebase and execute it from there.
+
+#### Risk #3: The script may not download fully and executing it could cause catastrophic errors.
+
+We wrote our bootstrap script as a series of bash functions that are only executed by the very last line of the script.
+Therefore, if the script doesn't fully download, the worst that'll happen when you execute it is a harmless syntax
+error.
+
+
