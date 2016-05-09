@@ -11,7 +11,7 @@
 #
 # So instead, we recommend that clients use this tiny bootstrap script as a one-liner:
 #
-# curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash -s --version 0.0.12
+# curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version 0.0.3
 #
 # You can copy this one-liner into your Packer and Docker templates and immediately after, start using the
 # gruntwork-install command.
@@ -40,10 +40,10 @@ function print_usage {
   echo "Examples:"
   echo
   echo "  Install version 0.0.3:"
-  echo "    bootstrap-gruntwork-installer.sh --version=0.0.3"
+  echo "    bootstrap-gruntwork-installer.sh --version 0.0.3"
   echo
   echo "  One-liner to download this bootstrap script from GitHub and run it to install version 0.0.3:"
-  echo "    curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash -s --version=0.0.3"
+  echo "    curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version 0.0.3"
 }
 
 function command_exists {
