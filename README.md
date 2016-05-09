@@ -18,7 +18,7 @@ curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/mast
 ```
 
 Notice the `--version` parameter at the end where you specify which version of `gruntwork-install` to install. See the
-[releases](/releases) page for all available versions.
+[releases](https://github.com/gruntwork-io/gruntwork-installer/releases) page for all available versions.
 
 For paranoid security folks, see [is it safe to pipe URLs into bash?](#is-it-safe-to-pipe-urls-into-bash) below.
 
