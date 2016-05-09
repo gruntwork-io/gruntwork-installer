@@ -24,7 +24,7 @@ function print_usage {
   echo "Options:"
   echo
   echo -e "  --module-name\t\tRequired. The name of the Script Module to install. Must be a folder within the $MODULES_DIR directory of $SCRIPT_MODULES_REPO."
-  echo -e "  --tag\t\t\tRequired. The version of the Script Module to install. Follows the syntax described at https://github.com/gruntwork-io/fetch#version-constraint-operators."
+  echo -e "  --tag\t\t\tRequired. The version of the Script Module to install. Follows the syntax described at https://github.com/gruntwork-io/fetch#tag-constraint-expressions."
   echo -e "  --branch\t\tOptional. Download the latest commit from this branch. This is an alternative to --tag for development purposes."
   echo -e "  --module-param\tOptional. A key-value pair of the format key=value you wish to pass to the module as a parameter. May be used multiple times."
   echo
