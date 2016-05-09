@@ -80,6 +80,7 @@ function fetch_script_module {
   # Note that fetch can safely handle blank arguments for --tag or --branch
   # If both --tag and --branch are specified, --branch will be used
   # TODO: fetch should read GITHUB_OAUTH_TOKEN as an environment variable too
+  echo "Downloading module $module_name from $SCRIPT_MODULES_REPO"
   fetch --repo="$SCRIPT_MODULES_REPO" --tag="$tag" --branch="$branch" --github-oauth-token="$github_token" "/modules/$module_name" "$download_path/$module_name" >/dev/null
 }
 
