@@ -18,12 +18,14 @@
 
 set -e
 
+readonly BIN_DIR="/usr/bin"
+
 readonly DEFAULT_FETCH_VERSION="v0.0.3"
 readonly FETCH_DOWNLOAD_URL_BASE="https://github.com/gruntwork-io/fetch/releases/download"
-readonly FETCH_INSTALL_PATH="/usr/local/bin/fetch"
+readonly FETCH_INSTALL_PATH="$BIN_DIR/fetch"
 
 readonly GRUNTWORK_INSTALLER_DOWNLOAD_URL_BASE="https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer"
-readonly GRUNTWORK_INSTALLER_INSTALL_PATH="/usr/local/bin/gruntwork-install"
+readonly GRUNTWORK_INSTALLER_INSTALL_PATH="$BIN_DIR/gruntwork-install"
 readonly GRUNTWORK_INSTALLER_SCRIPT_NAME="gruntwork-install"
 
 function print_usage {
@@ -74,6 +76,7 @@ function string_contains {
 
   [[ "$str" == *"$contains"* ]]
 }
+
 # http://stackoverflow.com/a/2264537/483528
 function to_lower_case {
   tr '[:upper:]' '[:lower:]'
