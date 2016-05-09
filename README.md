@@ -130,7 +130,8 @@ install process anyway, at which point manual inspection isn't a possibility any
 This is unlikely, as it is an https URL, and your download program (e.g. `curl`) should be verifying SSL certs. That
 said, Certificate Authorities have been hacked in the past, and perhaps the Gruntwork GitHub account could be hacked
 in the future, so if that is a major concern for you, feel free to copy the bootstrap code into your own codebase and
-execute it from there.
+execute it from there. Alternatively, in the future we will publish checksums of all of our releases, so you could
+optionally verify the checksum before executing the script.
 
 #### Risk #3: The script may not download fully and executing it could cause errors.
 
@@ -138,4 +139,8 @@ We wrote our [bootstrap-gruntwork-installer.sh](bootstrap-gruntwork-installer.sh
 are only executed by the very last line of the script. Therefore, if the script doesn't fully download, the worst
 that'll happen when you execute it is a harmless syntax error.
 
+## TODO
 
+1. Add support for a `--version` flag to `bootstrap-gruntwork-installer.sh` and `gruntwork-install`.
+1. Configure a CI build to automatically set the `--version` flag for each release.
+1. Add automated tests for this repo.
