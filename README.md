@@ -5,7 +5,8 @@ applications developed by [Gruntwork](http://www.gruntwork.io) for common infras
 continuous integration, monitoring, log aggregation, and SSH access. This repo provides a script called
 `gruntwork-install` that makes it as easy to install a Script Module as using apt-get, brew, or yum.
 
-For example, in your Packer and Docker templates, you can use `gruntwork-install` as follows:
+For example, in your Packer and Docker templates, you can use `gruntwork-install` to install the [vault-ssh-helper
+module](https://github.com/gruntwork-io/script-modules/tree/master/modules/vault-ssh-helper) as follows:
 
 ```bash
 gruntwork-install --module-name 'vault-ssh-helper' --tag '0.0.3'
@@ -47,13 +48,16 @@ Option           | Required | Description
 
 #### Examples
 
-Install the `cloudwatch-log-aggregation` module version `0.0.3`:
+Install the [cloudwatch-log-aggregation
+module](https://github.com/gruntwork-io/script-modules/tree/master/modules/cloudwatch-log-aggregation) version `0.0.3`:
 
 ```bash
 gruntwork-install --module-name 'cloudwatch-log-aggregation' --tag '0.0.3'
 ```
 
-Install the `vault-ssh-helper` module, passing two custom parameters to it:
+Install the [vault-ssh-helper
+module](https://github.com/gruntwork-io/script-modules/tree/master/modules/vault-ssh-helper), passing two custom
+parameters to it:
 
 ```bash
 gruntwork-install --module-name 'vault-ssh-helper' --tag '0.0.3' --module-param 'install-dir=/opt/vault-ssh-helper' --module-param 'owner=ubuntu'
