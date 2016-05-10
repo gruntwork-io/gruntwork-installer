@@ -41,7 +41,7 @@ Once that environment variable is set, you can run `gruntwork-install` with the 
 
 Option           | Required | Description
 ---------------- | -------- | ------------
-`--module-name`  | Yes      | The name of the Script Module to install. Can be any folder with an `install.sh` script within the `modules` directory of the [Script Modules Repo](https://github.com/gruntwork-io/script-modules).
+`--module-name`  | Yes      | The name of the Script Module to install. Can be any folder within the `modules` directory of the [Script Modules Repo](https://github.com/gruntwork-io/script-modules).
 `--tag`          | Yes      | The version of the Script Module to install. Follows the syntax described at [Tag Constraint Expressions](https://github.com/gruntwork-io/fetch#tag-constraint-expressions).
 `--module-param` | No       | A key-value pair of the format `key=value` you wish to pass to the module as a parameter. May be used multiple times. See the documentation for each module to find out what parameters it accepts.
 `--help`         | No       | Show the help text and exit.
