@@ -156,3 +156,4 @@ that'll happen when you execute it is a harmless syntax error.
 
 1. Add support for a `--version` flag to `bootstrap-gruntwork-installer.sh` and `gruntwork-install`.
 1. Configure a CI build to automatically set the `--version` flag for each release.
+1. Add an `uninstall` command that uses an `uninstall.sh` script in each module.
