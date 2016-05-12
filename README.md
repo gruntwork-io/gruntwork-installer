@@ -133,7 +133,7 @@ do about them.
 #### Risk #1: You don't know what the script is doing, so you shouldn't blindly execute it.
 
 This is true of *all* installers. For example, have you ever inspected the install code before running `apt-get install`
-or `brew install` or double cliking a `.dmg` or `.exe` file? If anything, a shell script is the most transparent
+or `brew install` or double clicking a `.dmg` or `.exe` file? If anything, a shell script is the most transparent
 installer out there, as it's one of the few that allows you to inspect the code (feel free to do so, as this script is
 open source!). The reality is that you either trust the developer or you don't. And eventually, you automate the
 install process anyway, at which point manual inspection isn't a possibility anyway.
@@ -157,3 +157,4 @@ that'll happen when you execute it is a harmless syntax error.
 1. Add support for a `--version` flag to `bootstrap-gruntwork-installer.sh` and `gruntwork-install`.
 1. Configure a CI build to automatically set the `--version` flag for each release.
 1. Add an `uninstall` command that uses an `uninstall.sh` script in each module.
+1. Add support for modules declaring their dependencies. Alternatively, consider Nix again as a dependency manager.
