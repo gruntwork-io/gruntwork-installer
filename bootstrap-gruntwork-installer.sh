@@ -40,6 +40,7 @@ function print_usage {
   echo -e "  --version\t\tRequired. The version of $GRUNTWORK_INSTALLER_SCRIPT_NAME to install (e.g. 0.0.3)."
   echo -e "  --fetch-version\tOptional. The version of fetch to install. Default: $DEFAULT_FETCH_VERSION."
   echo -e "  --user-data-owner\tOptional. The user who shown own the $USER_DATA_DIR folder. Default: (current user)."
+  echo -e "  --download-url\tOptional. The URL from where to download $GRUNTWORK_INSTALLER_SCRIPT_NAME. Mostly used for automated tests. Default: $GRUNTWORK_INSTALLER_DOWNLOAD_URL_BASE/(version)/$GRUNTWORK_INSTALLER_SCRIPT_NAME."
   echo
   echo "Examples:"
   echo
@@ -64,16 +65,35 @@ function download_url_to_file {
   echo "Downloading $url to $tmp_path"
   if $(command_exists "curl"); then
     local readonly status_code=$(curl -L -s -w '%{http_code}' -o "$tmp_path" "$url")
-    if [[ "$status_code" != "200" ]]; then
-      echo "ERROR: Expected status code 200 but got $status_code when downloading $url"
-      exit 1
-    fi
+    assert_successful_status_code "$status_code" "$url"
+
     echo "Moving $tmp_path to $file"
     sudo mv -f "$tmp_path" "$file"
   else
     echo "ERROR: curl is not installed. Cannot download $url."
     exit 1
   fi
+}
+
+function assert_successful_status_code {
+  local readonly status_code="$1"
+  local readonly url="$2"
+
+  if [[ "$status_code" == "200" ]]; then
+    echo "Got expected status code 200"
+  elif $(string_starts_with "$url" "file://") && [[ "$status_code" == "000" ]]; then
+    echo "Got expected status code 000 for local file URL"
+  else
+    echo "ERROR: Expected status code 200 but got $status_code when downloading $url"
+    exit 1
+  fi
+}
+
+function string_starts_with {
+  local readonly str="$1"
+  local readonly prefix="$2"
+
+  [[ "$str" == "$prefix"* ]]
 }
 
 function string_contains {
@@ -136,10 +156,10 @@ function install_fetch {
 function install_gruntwork_installer {
   local readonly install_path="$1"
   local readonly version="$2"
+  local readonly download_url="$3"
 
   echo "Installing $GRUNTWORK_INSTALLER_SCRIPT_NAME version $version to $install_path"
-  local readonly url="${GRUNTWORK_INSTALLER_DOWNLOAD_URL_BASE}/${version}/${GRUNTWORK_INSTALLER_SCRIPT_NAME}"
-  download_and_install "$url" "$install_path"
+  download_and_install "$download_url" "$install_path"
 }
 
 function assert_not_empty {
@@ -178,6 +198,7 @@ function bootstrap {
   local fetch_version="$DEFAULT_FETCH_VERSION"
   local installer_version=""
   local user_data_folder_owner=$(id -u -n)
+  local download_url=""
 
   while [[ $# > 0 ]]; do
     local key="$1"
@@ -193,6 +214,10 @@ function bootstrap {
         ;;
       --user-data-owner)
         user_data_folder_owner="$2"
+        shift
+        ;;
+      --download-url)
+        download_url="$2"
         shift
         ;;
       --help)
@@ -213,9 +238,13 @@ function bootstrap {
   assert_not_empty "--fetch-version" "$fetch_version"
   assert_not_empty "--user-data-owner" "$user_data_folder_owner"
 
+  if [[ -z "$download_url" ]]; then
+    download_url="${GRUNTWORK_INSTALLER_DOWNLOAD_URL_BASE}/${installer_version}/${GRUNTWORK_INSTALLER_SCRIPT_NAME}"
+  fi
+
   echo "Installing $GRUNTWORK_INSTALLER_SCRIPT_NAME..."
   install_fetch "$FETCH_INSTALL_PATH" "$fetch_version"
-  install_gruntwork_installer "$GRUNTWORK_INSTALLER_INSTALL_PATH" "$installer_version"
+  install_gruntwork_installer "$GRUNTWORK_INSTALLER_INSTALL_PATH" "$installer_version" "$download_url"
   create_user_data_folder "$USER_DATA_DIR" "$user_data_folder_owner"
   echo "Success!"
 }

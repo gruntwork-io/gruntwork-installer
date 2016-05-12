@@ -88,9 +88,11 @@ function fetch_script_module {
 function validate_module {
   local readonly module_name="$1"
   local readonly download_path="$2"
+  local readonly tag="$3"
+  local readonly branch="$4"
 
   if [[ ! -e "$download_path/$module_name" ]]; then
-    echo "ERROR: No files were downloaded. Are you sure \"$module_name\" is a valid Script Module in $SCRIPT_MODULES_REPO?"
+    echo "ERROR: No files were downloaded. Are you sure \"$module_name\" is a valid Script Module in $SCRIPT_MODULES_REPO (tag = $tag, branch = $branch)?"
     exit 1
   fi
 }
@@ -170,7 +172,7 @@ function install_script_module {
 
   echo "Installing $module_name..."
   fetch_script_module "$module_name" "$tag" "$branch" "$GITHUB_OAUTH_TOKEN" "$MODULES_DOWNLOAD_DIR"
-  validate_module "$module_name" "$MODULES_DOWNLOAD_DIR"
+  validate_module "$module_name" "$MODULES_DOWNLOAD_DIR" "$tag" "$branch"
   run_module "$module_name" "${module_params[@]}"
   echo "Success!"
 }

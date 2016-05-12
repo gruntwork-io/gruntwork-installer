@@ -1,0 +1,10 @@
+installer:
+  image: gruntwork/gruntwork-installer
+  volumes:
+    # Mount the scripts in the root directory under /src
+    - ../:/src
+    # Mount the test code in this directory under /test
+    - .:/test
+  environment:
+    # Forward the GITHUB_OAUTH_TOKEN as an environment variable from the user's environment
+    - GITHUB_OAUTH_TOKEN
