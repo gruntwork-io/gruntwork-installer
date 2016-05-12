@@ -1,4 +1,4 @@
-FROM ubuntu
+FROM ubuntu:14.04
 MAINTAINER Gruntwork <info@gruntwork.io>
 
 RUN apt-get update
