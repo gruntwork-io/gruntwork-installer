@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This script downloads a Gruntwork Script Module from https://github.com/gruntwork-io/script-modules using fetch
+# This script can be usedGruntwork Script Modules from https://github.com/gruntwork-io/script-modules using fetch
 # (https://github.com/gruntwork-io/fetch), and then runs it. The main motivation in writing it is to make installing
 # Gruntwork Script Modules feel as easy as installing a package using apt-get, brew, or yum.
 #
@@ -19,13 +19,14 @@ function print_usage {
   echo
   echo "Usage: gruntwork-install [OPTIONS]"
   echo
-  echo "Download a Gruntwork Script Module from https://github.com/gruntwork-io/script-modules and install it."
+  echo "Download a Gruntwork Script Module and install it."
   echo
   echo "Options:"
   echo
-  echo -e "  --module-name\t\tRequired. The name of the Script Module to install. Can be any folder within the $MODULES_DIR directory of $SCRIPT_MODULES_REPO."
-  echo -e "  --tag\t\t\tRequired. The version of the Script Module to install. Follows the syntax described at https://github.com/gruntwork-io/fetch#tag-constraint-expressions."
-  echo -e "  --branch\t\tOptional. Download the latest commit from this branch. This is an alternative to --tag for development purposes."
+  echo -e "  --module-name\t\tRequired. The name of the module to install. Can be any folder within the $MODULES_DIR directory of the --repo option."
+  echo -e "  --tag\t\t\tRequired. The version of the module to install. Follows the syntax described at https://github.com/gruntwork-io/fetch#tag-constraint-expressions."
+  echo -e "  --branch\t\tOptional. Download the latest commit from this branch in --repo. This is an alternative to --tag for development purposes."
+  echo -e "  --repo\t\tOptional. The repo to download modules from. If not specified, defaults to $SCRIPT_MODULES_REPO."
   echo -e "  --module-param\tOptional. A key-value pair of the format key=value you wish to pass to the module as a parameter. May be used multiple times."
   echo
   echo "Example:"
@@ -72,6 +73,7 @@ function fetch_script_module {
   local readonly branch="$3"
   local readonly github_token="$4"
   local readonly download_path="$5"
+  local readonly repo="$6"
 
   # We want to make sure that all folders down to $download_path/$module_name exists, but that $download_path/$module_name itself is empty.
   mkdir -p "$download_path/$module_name/"
@@ -80,8 +82,8 @@ function fetch_script_module {
   # Note that fetch can safely handle blank arguments for --tag or --branch
   # If both --tag and --branch are specified, --branch will be used
   # TODO: fetch should read GITHUB_OAUTH_TOKEN as an environment variable too
-  echo "Downloading module $module_name from $SCRIPT_MODULES_REPO"
-  fetch --repo="$SCRIPT_MODULES_REPO" --tag="$tag" --branch="$branch" --github-oauth-token="$github_token" "/modules/$module_name" "$download_path/$module_name" >/dev/null
+  echo "Downloading module $module_name from $repo"
+  fetch --repo="$repo" --tag="$tag" --branch="$branch" --github-oauth-token="$github_token" "/modules/$module_name" "$download_path/$module_name" >/dev/null
 }
 
 # Validate that at least one file was downloaded from the module; otherwise throw an error.
@@ -90,9 +92,10 @@ function validate_module {
   local readonly download_path="$2"
   local readonly tag="$3"
   local readonly branch="$4"
+  local reaodnly repo="$5"
 
   if [[ ! -e "$download_path/$module_name" ]]; then
-    echo "ERROR: No files were downloaded. Are you sure \"$module_name\" is a valid Script Module in $SCRIPT_MODULES_REPO (tag = $tag, branch = $branch)?"
+    echo "ERROR: No files were downloaded. Are you sure \"$module_name\" is a valid Script Module in $repo (tag = $tag, branch = $branch)?"
     exit 1
   fi
 }
@@ -119,6 +122,7 @@ function install_script_module {
   local tag=""
   local branch=""
   local module_name=""
+  local repo="$SCRIPT_MODULES_REPO"
   local module_params=()
 
   while [[ $# > 0 ]]; do
@@ -135,6 +139,10 @@ function install_script_module {
         ;;
       --module-name)
         module_name="$2"
+        shift
+        ;;
+      --repo)
+        repo="$2"
         shift
         ;;
       --module-param)
@@ -158,11 +166,12 @@ function install_script_module {
 
   assert_is_installed fetch
   assert_not_empty "--module-name" "$module_name"
+  assert_not_empty "--repo" "$repo"
   assert_env_var_not_empty "GITHUB_OAUTH_TOKEN"
 
   echo "Installing $module_name..."
-  fetch_script_module "$module_name" "$tag" "$branch" "$GITHUB_OAUTH_TOKEN" "$MODULES_DOWNLOAD_DIR"
-  validate_module "$module_name" "$MODULES_DOWNLOAD_DIR" "$tag" "$branch"
+  fetch_script_module "$module_name" "$tag" "$branch" "$GITHUB_OAUTH_TOKEN" "$MODULES_DOWNLOAD_DIR" "$repo"
+  validate_module "$module_name" "$MODULES_DOWNLOAD_DIR" "$tag" "$branch" "$repo"
   run_module "$module_name" "${module_params[@]}"
   echo "Success!"
 }
