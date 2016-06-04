@@ -1,9 +1,10 @@
 # Gruntwork Installer
 
-[Gruntwork Script Modules](https://github.com/gruntwork-io/script-modules) is a private repo that contains scripts and
-applications developed by [Gruntwork](http://www.gruntwork.io) for common infrastructure tasks such as setting up
-continuous integration, monitoring, log aggregation, and SSH access. This repo provides a script called
-`gruntwork-install` that makes it as easy to install a Script Module as using apt-get, brew, or yum.
+At [Gruntwork](http://www.gruntwork.io/), we've developed a number of scripts and apps, most of them in private repos
+such as [script-modules](https://github.com/gruntwork-io/script-modules), that perform common infrastructure tasks such
+as setting up continuous integration, monitoring, log aggregation, and SSH access. This repo provides a script called
+`gruntwork-install` that makes it as easy to install a Gruntwork script from a private repo as using apt-get, brew, or
+yum.
 
 For example, in your Packer and Docker templates, you can use `gruntwork-install` to install the [vault-ssh-helper
 module](https://github.com/gruntwork-io/script-modules/tree/master/modules/vault-ssh-helper) as follows:
@@ -15,7 +16,7 @@ gruntwork-install --module-name 'vault-ssh-helper' --tag '0.0.3'
 ## Installing gruntwork-install
 
 ```bash
-curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version 0.0.6
+curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version 0.0.7
 ```
 
 Notice the `--version` parameter at the end where you specify which version of `gruntwork-install` to install. See the
@@ -27,9 +28,9 @@ For paranoid security folks, see [is it safe to pipe URLs into bash?](#is-it-saf
 
 #### Authentication
 
-Since the [Script Modules](https://github.com/gruntwork-io/script-modules) repo is private, you must set your
-[GitHub access token](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) as the
-environment variable `GITHUB_OAUTH_TOKEN` so `gruntwork-install` can use it to access the repo:
+To install scripts from private Gruntwork repos, you must create a [GitHub access
+token](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) and set it as the environment
+variable `GITHUB_OAUTH_TOKEN` so `gruntwork-install` can use it to access the repo:
 
 ```bash
 export GITHUB_OAUTH_TOKEN="(your secret token)"
@@ -44,6 +45,7 @@ Option           | Required | Description
 `--module-name`  | Yes      | The name of the Script Module to install. Can be any folder within the `modules` directory of the [Script Modules Repo](https://github.com/gruntwork-io/script-modules).
 `--tag`          | Yes      | The version of the Script Module to install. Follows the syntax described at [Tag Constraint Expressions](https://github.com/gruntwork-io/fetch#tag-constraint-expressions).
 `--module-param` | No       | A key-value pair of the format `key=value` you wish to pass to the module as a parameter. May be used multiple times. See the documentation for each module to find out what parameters it accepts.
+`--repo`         | No       | `gruntwork-install` assumes that all scripts are in the [script-modules](https://github.com/gruntwork-io/script-modules) repo. To use a different repo, specify the `--repo` flag.
 `--help`         | No       | Show the help text and exit.
 
 #### Examples
@@ -61,6 +63,13 @@ parameters to it:
 
 ```bash
 gruntwork-install --module-name 'vault-ssh-helper' --tag '0.0.3' --module-param 'install-dir=/opt/vault-ssh-helper' --module-param 'owner=ubuntu'
+```
+
+Install [ecs-scripts](https://github.com/gruntwork-io/module-ecs/tree/master/modules/scripts) from the
+[module-ecs repo](https://github.com/gruntwork-io/module-ecs):
+
+```bash
+gruntwork-install --module-name 'ecs-scripts' --tag '0.0.3' --repo "https://github.com/gruntwork-io/module-ecs"
 ```
 
 And finally, to put all the pieces together, here is an example of a Packer template that installs `gruntwork-install`
@@ -100,15 +109,16 @@ and then uses it to install several modules:
 
 `gruntwork-install` is a fairly simple script that does the following:
 
-1. Uses [fetch](https://github.com/gruntwork-io/fetch) to download the version of the module requested from
-   [script-modules](https://github.com/gruntwork-io/script-modules).
+1. Uses [fetch](https://github.com/gruntwork-io/fetch) to download the specified version of the module from the
+   `/modules` folder of either the [script-modules](https://github.com/gruntwork-io/script-modules) repo or the repo
+   specified via the `--repo` option.
 1. Runs the `install.sh` script inside that module.
 
 Future versions of `gruntwork-install` may do more (e.g. verify checksums, manage dependencies), but for now, that's
 all there is to it.
 
-That means that to add a new module to script-modules, all you have to do is include an `install.sh` script and it'll
-automatically be installable!
+That means that to add a new module, all you have to do is include an `install.sh` script and it'll automatically be
+installable!
 
 ## Running tests
 
