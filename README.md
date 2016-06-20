@@ -1,22 +1,21 @@
 # Gruntwork Installer
 
-At [Gruntwork](http://www.gruntwork.io/), we've developed a number of scripts and apps, most of them in private repos
-such as [script-modules](https://github.com/gruntwork-io/script-modules), that perform common infrastructure tasks such
-as setting up continuous integration, monitoring, log aggregation, and SSH access. This repo provides a script called
-`gruntwork-install` that makes it as easy to install a Gruntwork script from a private repo as using apt-get, brew, or
-yum.
+At [Gruntwork](http://www.gruntwork.io/), we've developed a number of scripts and binaries, most of them in private
+repos, that perform common infrastructure tasks such as setting up continuous integration, monitoring, log aggregation,
+and SSH access. This repo provides a script called `gruntwork-install` that makes it as easy to install Gruntwork
+scripts and binaries as using apt-get, brew, or yum.
 
-For example, in your Packer and Docker templates, you can use `gruntwork-install` to install the [vault-ssh-helper
-module](https://github.com/gruntwork-io/script-modules/tree/master/modules/vault-ssh-helper) as follows:
+For example, in your Packer and Docker templates, you can use `gruntwork-install` to install the [ecs-scripts
+module](https://github.com/gruntwork-io/module-ecs/tree/master/modules/ecs-scripts) as follows:
 
-```bash
-gruntwork-install --module-name 'vault-ssh-helper' --tag '0.0.3'
+```
+gruntwork-install --module-name 'ecs-scripts' --repo 'https://github.com/gruntwork-io/module-ecs' --tag '0.0.1'
 ```
 
 ## Installing gruntwork-install
 
-```bash
-curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version 0.0.7
+```
+curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version 0.0.11
 ```
 
 Notice the `--version` parameter at the end where you specify which version of `gruntwork-install` to install. See the
@@ -28,11 +27,11 @@ For paranoid security folks, see [is it safe to pipe URLs into bash?](#is-it-saf
 
 #### Authentication
 
-To install scripts from private Gruntwork repos, you must create a [GitHub access
+To install scripts and binaries from private Gruntwork repos, you must create a [GitHub access
 token](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) and set it as the environment
 variable `GITHUB_OAUTH_TOKEN` so `gruntwork-install` can use it to access the repo:
 
-```bash
+```
 export GITHUB_OAUTH_TOKEN="(your secret token)"
 ```
 
@@ -42,37 +41,43 @@ Once that environment variable is set, you can run `gruntwork-install` with the 
 
 Option           | Required | Description
 ---------------- | -------- | ------------
-`--module-name`  | Yes      | The name of the Script Module to install. Can be any folder within the `modules` directory of the [Script Modules Repo](https://github.com/gruntwork-io/script-modules).
-`--tag`          | Yes      | The version of the Script Module to install. Follows the syntax described at [Tag Constraint Expressions](https://github.com/gruntwork-io/fetch#tag-constraint-expressions).
+`--repo`         | Yes      | The GitHub repo to install from.
+`--tag`          | Yes      | The version of the `--repo` to install from. Follows the syntax described at [Tag Constraint Expressions](https://github.com/gruntwork-io/fetch#tag-constraint-expressions).
+`--module-name`  | No       | The name of a module to install. Can be any folder within the `modules` directory of `--repo`. You must specify exactly one of `--module-name` or `--binary-name`.
+`--binary-name`  | No       | The name of a binary to install. Can be any file uploaded as a release asset in `--repo`.  You must specify exactly one of `--module-name` or `--binary-name`.
 `--module-param` | No       | A key-value pair of the format `key=value` you wish to pass to the module as a parameter. May be used multiple times. See the documentation for each module to find out what parameters it accepts.
-`--repo`         | No       | `gruntwork-install` assumes that all scripts are in the [script-modules](https://github.com/gruntwork-io/script-modules) repo. To use a different repo, specify the `--repo` flag.
 `--help`         | No       | Show the help text and exit.
 
 #### Examples
 
-Install the [cloudwatch-log-aggregation
-module](https://github.com/gruntwork-io/script-modules/tree/master/modules/cloudwatch-log-aggregation) version `0.0.3`:
+Install the [ecs-scripts
+module](https://github.com/gruntwork-io/module-ecs/tree/master/modules/ecs-scripts) from the [module-ecs
+repo](https://github.com/gruntwork-io/module-ecs), version `0.0.1`:
 
-```bash
-gruntwork-install --module-name 'cloudwatch-log-aggregation' --tag '0.0.3'
+```
+gruntwork-install --module-name 'ecs-scripts' --repo 'https://github.com/gruntwork-io/module-ecs' --tag '0.0.1'
 ```
 
 Install the [vault-ssh-helper
-module](https://github.com/gruntwork-io/script-modules/tree/master/modules/vault-ssh-helper), passing two custom
-parameters to it:
+module](https://github.com/gruntwork-io/script-modules/tree/master/modules/vault-ssh-helper) from the [script-modules
+repo](https://github.com/gruntwork-io/script-modules), passing two custom parameters to it:
 
-```bash
-gruntwork-install --module-name 'vault-ssh-helper' --tag '0.0.3' --module-param 'install-dir=/opt/vault-ssh-helper' --module-param 'owner=ubuntu'
+```
+gruntwork-install --module-name 'vault-ssh-helper' --repo 'https://github.com/gruntwork-io/script-modules' --tag '0.0.3' --module-param 'install-dir=/opt/vault-ssh-helper' --module-param 'owner=ubuntu'
 ```
 
-Install [ecs-scripts](https://github.com/gruntwork-io/module-ecs/tree/master/modules/scripts) from the
-[module-ecs repo](https://github.com/gruntwork-io/module-ecs):
+Install the `gruntkms` binary from the `v0.0.1` release of the [gruntkms
+repo](https://github.com/gruntwork-io/gruntkms):
 
-```bash
-gruntwork-install --module-name 'ecs-scripts' --tag '0.0.3' --repo "https://github.com/gruntwork-io/module-ecs"
+```
+gruntwork-install --binary-name 'gruntkms' --repo 'https://github.com/gruntwork-io/gruntkms' --tag 'v0.0.1'
 ```
 
-And finally, to put all the pieces together, here is an example of a Packer template that installs `gruntwork-install`
+Note that the [v0.0.1 release of the gruntkms repo](https://github.com/gruntwork-io/gruntkms/releases/tag/v0.0.1) has
+multiple binaries (`gruntkms_linux_amd64`, `gruntkms_darwin_386`, etc): `gruntwork-install` automatically picks the
+right binary for your OS and copies it to `/usr/local/bin/gruntkms`.
+
+Finally, to put all the pieces together, here is an example of a Packer template that installs `gruntwork-install`
 and then uses it to install several modules:
 
 ```json
@@ -90,13 +95,13 @@ and then uses it to install several modules:
   }],
   "provisioners": [{
     "type": "shell",
-    "inline": "curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version 0.0.6"
+    "inline": "curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version 0.0.11"
   },{
     "type": "shell",
     "inline": [
-      "gruntwork-install --module-name 'vault-ssh-helper' --tag '~>0.0.4' --module-param 'install-dir=/opt/vault-ssh-helper' --module-param 'owner=ubuntu'",
-      "gruntwork-install --module-name 'cloudwatch-log-aggregation' --tag '~>0.0.4'",
-      "gruntwork-install --module-name 'build-helpers' --tag '~>0.0.4'"
+      "gruntwork-install --module-name 'ecs-scripts' --repo 'https://github.com/gruntwork-io/module-ecs' --tag '0.0.1'",
+      "gruntwork-install --module-name 'vault-ssh-helper' --repo 'https://github.com/gruntwork-io/script-modules' --tag '0.0.3' --module-param 'install-dir=/opt/vault-ssh-helper' --module-param 'owner=ubuntu'",
+      "gruntwork-install --binary-name 'gruntkms' --repo 'https://github.com/gruntwork-io/gruntkms' --tag 'v0.0.1'"
     ],
     "environment_vars": [
       "GITHUB_OAUTH_TOKEN={{user `github_auth_token`}}"
@@ -107,18 +112,21 @@ and then uses it to install several modules:
 
 ## How Gruntwork modules work
 
-`gruntwork-install` is a fairly simple script that does the following:
+`gruntwork-install` does the following:
 
-1. Uses [fetch](https://github.com/gruntwork-io/fetch) to download the specified version of the module from the
-   `/modules` folder of either the [script-modules](https://github.com/gruntwork-io/script-modules) repo or the repo
-   specified via the `--repo` option.
-1. Runs the `install.sh` script inside that module.
+1. Uses [fetch](https://github.com/gruntwork-io/fetch) to download the specified version of the module or binary from
+   the repo specified via the `--repo` option.
+1. If you used the `--module-name` parameter, it downloads the module from the `modules` folder of `--repo` and runs
+   the `install.sh` script of that module.
+1. If you used the `--binary-name` parameter, it downloads the right binary for your OS, copies it to `/usr/local/bin`,
+   and gives it execute permissions.
 
 Future versions of `gruntwork-install` may do more (e.g. verify checksums, manage dependencies), but for now, that's
 all there is to it.
 
-That means that to add a new module, all you have to do is include an `install.sh` script and it'll automatically be
-installable!
+That means that to create an installable module, all you have to do is put it in the `modules` folder and include an
+`install.sh` script; to create an installable binary, you just publish it to a GitHub release with the name format
+`<NAME>_<OS>_<ARCH>`.
 
 ## Running tests
 

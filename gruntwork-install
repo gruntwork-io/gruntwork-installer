@@ -9,11 +9,11 @@
 
 set -e
 
-readonly SCRIPT_MODULES_REPO="https://github.com/gruntwork-io/script-modules"
 readonly MODULES_DIR="modules"
+readonly MODULE_INSTALL_FILE_NAME="install.sh"
 
 readonly MODULES_DOWNLOAD_DIR="/tmp/gruntwork-script-modules"
-readonly MODULE_INSTALL_FILE_NAME="install.sh"
+readonly BINARY_DOWNLOAD_DIR="/usr/local/bin"
 
 function print_usage {
   echo
@@ -23,15 +23,17 @@ function print_usage {
   echo
   echo "Options:"
   echo
-  echo -e "  --module-name\t\tRequired. The name of the module to install. Can be any folder within the $MODULES_DIR directory of the --repo option."
-  echo -e "  --tag\t\t\tRequired. The version of the module to install. Follows the syntax described at https://github.com/gruntwork-io/fetch#tag-constraint-expressions."
-  echo -e "  --branch\t\tOptional. Download the latest commit from this branch in --repo. This is an alternative to --tag for development purposes."
-  echo -e "  --repo\t\tOptional. The repo to download modules from. If not specified, defaults to $SCRIPT_MODULES_REPO."
+  echo -e "  --repo\t\Required. The repo to install from."
+  echo -e "  --tag\t\t\tRequired. The version of --repo to install. Follows the syntax described at https://github.com/gruntwork-io/fetch#tag-constraint-expressions."
+  echo -e "  --module-name\t\tOptional. The name of a module to install. Can be any folder within the $MODULES_DIR directory of --repo. You must specify exactly one of --module-name or --binary-name."
+  echo -e "  --binary-name\t\tOptional. The name of a binary to install. Can be any file uploaded as a release asset in --repo.  You must specify exactly one of --module-name or --binary-name."
+  echo -e "  --branch\t\tOptional. Download the latest commit from this branch in --repo. This is an alternative to --tag, used only for testing."
   echo -e "  --module-param\tOptional. A key-value pair of the format key=value you wish to pass to the module as a parameter. May be used multiple times."
+  echo -e "  --help\t\Show this help text and exit."
   echo
   echo "Example:"
   echo
-  echo "  gruntwork-install --module-name 'vault-ssh-helper' --tag '~>0.0.3' --module-param 'install-dir=/opt/vault-ssh-helper' --module-param 'owner=ubuntu'"
+  echo "  gruntwork-install --module-name 'vault-ssh-helper' --repo 'https://github.com/gruntwork-io/script-modules' --tag '~>0.0.3' --module-param 'install-dir=/opt/vault-ssh-helper' --module-param 'owner=ubuntu'"
   echo
 }
 
@@ -71,9 +73,8 @@ function fetch_script_module {
   local readonly module_name="$1"
   local readonly tag="$2"
   local readonly branch="$3"
-  local readonly github_token="$4"
-  local readonly download_path="$5"
-  local readonly repo="$6"
+  local readonly download_path="$4"
+  local readonly repo="$5"
 
   # We want to make sure that all folders down to $download_path/$module_name exists, but that $download_path/$module_name itself is empty.
   mkdir -p "$download_path/$module_name/"
@@ -81,9 +82,36 @@ function fetch_script_module {
 
   # Note that fetch can safely handle blank arguments for --tag or --branch
   # If both --tag and --branch are specified, --branch will be used
-  # TODO: fetch should read GITHUB_OAUTH_TOKEN as an environment variable too
   echo "Downloading module $module_name from $repo"
-  fetch --repo="$repo" --tag="$tag" --branch="$branch" --github-oauth-token="$github_token" "/modules/$module_name" "$download_path/$module_name" >/dev/null
+  fetch --repo="$repo" --tag="$tag" --branch="$branch" --source-path="/modules/$module_name" "$download_path/$module_name"
+}
+
+# Download a binary asset from a GitHub release using fetch (https://github.com/gruntwork-io/fetch)
+function fetch_binary {
+  local readonly binary_name="$1"
+  local readonly tag="$2"
+  local readonly download_path="$3"
+  local readonly repo="$4"
+
+  local binary_name_full=""
+  binary_name_full=$(determine_binary_name "$binary_name")
+
+  # We want to make sure that all folders down to $download_path exist, but that $download_path/$binary_name_full does not
+  mkdir -p "$download_path"
+  rm -f "$download_path/$binary_name_full"
+
+  # Use fetch to download the binary and then move it to its final destination
+  fetch --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_path"
+  mv "$download_path/$binary_name_full" "$download_path/$binary_name"
+}
+
+function set_binary_permissions {
+  local readonly binary_name="$1"
+  local readonly download_path="$2"
+  local readonly full_path="$download_path/$binary_name"
+
+  echo "Setting execute permissions for $full_path"
+  chmod u+x "$full_path"
 }
 
 # Validate that at least one file was downloaded from the module; otherwise throw an error.
@@ -98,6 +126,47 @@ function validate_module {
     echo "ERROR: No files were downloaded. Are you sure \"$module_name\" is a valid Script Module in $repo (tag = $tag, branch = $branch)?"
     exit 1
   fi
+}
+
+# http://stackoverflow.com/a/2264537/483528
+function to_lower_case {
+  tr '[:upper:]' '[:lower:]'
+}
+
+function get_os_name {
+  uname | to_lower_case
+}
+
+function get_os_arch {
+  uname -m
+}
+
+function string_contains {
+  local readonly str="$1"
+  local readonly contains="$2"
+
+  [[ "$str" == *"$contains"* ]]
+}
+
+function get_os_arch_gox_format {
+  local readonly arch=$(get_os_arch)
+
+  if $(string_contains "$arch" "64"); then
+    echo "amd64"
+  elif $(string_contains "$arch" "386"); then
+    echo "386"
+  elif $(string_contains "$arch" "arm"); then
+    echo "arm"
+  fi
+}
+
+# We release binaries with the name following the format <NAME>_<OS>_<ARCH> (e.g. foo_linux_amd64). Given the NAME of
+# a binary, this function adds the proper OS and ARCH to it for the current OS.
+function determine_binary_name {
+  local readonly binary_name="$1"
+  local readonly os_name=$(get_os_name)
+  local readonly os_arch=$(get_os_arch_gox_format)
+  echo "${binary_name}_${os_name}_${os_arch}"
 }
 
 # Take in a key-value pair of the format key=value and convert it to the format that Gruntwork bash scripts expect:
@@ -122,7 +191,8 @@ function install_script_module {
   local tag=""
   local branch=""
   local module_name=""
-  local repo="$SCRIPT_MODULES_REPO"
+  local binary_name=""
+  local repo=""
   local module_params=()
 
   while [[ $# > 0 ]]; do
@@ -139,6 +209,10 @@ function install_script_module {
         ;;
       --module-name)
         module_name="$2"
+        shift
+        ;;
+      --binary-name)
+        binary_name="$2"
         shift
         ;;
       --repo)
@@ -165,14 +239,30 @@ function install_script_module {
   done
 
   assert_is_installed fetch
-  assert_not_empty "--module-name" "$module_name"
-  assert_not_empty "--repo" "$repo"
   assert_env_var_not_empty "GITHUB_OAUTH_TOKEN"
+  assert_not_empty "--repo" "$repo"
 
-  echo "Installing $module_name..."
-  fetch_script_module "$module_name" "$tag" "$branch" "$GITHUB_OAUTH_TOKEN" "$MODULES_DOWNLOAD_DIR" "$repo"
-  validate_module "$module_name" "$MODULES_DOWNLOAD_DIR" "$tag" "$branch" "$repo"
-  run_module "$module_name" "${module_params[@]}"
+  if [[ ( -z "$module_name" && -z "$binary_name" ) || ( ! -z "$module_name" && ! -z "$binary_name" ) ]]; then
+    echo "ERROR: You must specify exactly one of --module-name or --binary-name."
+    exit 1
+  fi
+
+  if [[ ! -z "$binary_name" && -z "$tag" ]]; then
+    echo "ERROR: --binary-name can only be used if you specify a release via --tag."
+    exit 1
+  fi
+
+  if [[ ! -z "$module_name" ]]; then
+    echo "Installing from $module_name..."
+    fetch_script_module "$module_name" "$tag" "$branch" "$MODULES_DOWNLOAD_DIR" "$repo"
+    validate_module "$module_name" "$MODULES_DOWNLOAD_DIR" "$tag" "$branch" "$repo"
+    run_module "$module_name" "${module_params[@]}"
+  else
+    echo "Installing $binary_name..."
+    fetch_binary "$binary_name" "$tag" "$BINARY_DOWNLOAD_DIR" "$repo"
+    set_binary_permissions "$binary_name" "$BINARY_DOWNLOAD_DIR"
+  fi
+
   echo "Success!"
 }
 
