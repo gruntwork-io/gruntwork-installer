@@ -13,7 +13,7 @@ readonly MODULES_DIR="modules"
 readonly MODULE_INSTALL_FILE_NAME="install.sh"
 
 readonly MODULES_DOWNLOAD_DIR="/tmp/gruntwork-script-modules"
-readonly BINARY_DOWNLOAD_DIR="/usr/local/bin"
+readonly BIN_DIR="/usr/local/bin"
 
 function print_usage {
   echo
@@ -96,22 +96,18 @@ function fetch_binary {
   local binary_name_full=""
   binary_name_full=$(determine_binary_name "$binary_name")
 
+  local readonly full_download_path="$download_path/$binary_name_full"
+  local readonly full_dest_path="$BIN_DIR/$binary_name"
+
   # We want to make sure that all folders down to $download_path exist, but that $download_path/$binary_name_full does not
   mkdir -p "$download_path"
   rm -f "$download_path/$binary_name_full"
 
-  # Use fetch to download the binary and then move it to its final destination
   fetch --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_path"
-  mv "$download_path/$binary_name_full" "$download_path/$binary_name"
-}
 
-function set_binary_permissions {
-  local readonly binary_name="$1"
-  local readonly download_path="$2"
-  local readonly full_path="$download_path/$binary_name"
-
-  echo "Setting execute permissions for $full_path"
-  chmod u+x "$full_path"
+  echo "Moving $full_download_path to $full_dest_path and setting execute permissions"
+  sudo mv "$full_download_path" "$full_dest_path"
+  sudo chmod u+x "$full_dest_path"
 }
 
 # Validate that at least one file was downloaded from the module; otherwise throw an error.
@@ -259,8 +255,7 @@ function install_script_module {
     run_module "$module_name" "${module_params[@]}"
   else
     echo "Installing $binary_name..."
-    fetch_binary "$binary_name" "$tag" "$BINARY_DOWNLOAD_DIR" "$repo"
-    set_binary_permissions "$binary_name" "$BINARY_DOWNLOAD_DIR"
+    fetch_binary "$binary_name" "$tag" "$MODULES_DOWNLOAD_DIR" "$repo"
   fi
 
   echo "Success!"
