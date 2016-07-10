@@ -39,14 +39,14 @@ export GITHUB_OAUTH_TOKEN="(your secret token)"
 
 Once that environment variable is set, you can run `gruntwork-install` with the following options:
 
-Option           | Required | Description
----------------- | -------- | ------------
-`--repo`         | Yes      | The GitHub repo to install from.
-`--tag`          | Yes      | The version of the `--repo` to install from. Follows the syntax described at [Tag Constraint Expressions](https://github.com/gruntwork-io/fetch#tag-constraint-expressions).
-`--module-name`  | No       | The name of a module to install. Can be any folder within the `modules` directory of `--repo`. You must specify exactly one of `--module-name` or `--binary-name`.
-`--binary-name`  | No       | The name of a binary to install. Can be any file uploaded as a release asset in `--repo`.  You must specify exactly one of `--module-name` or `--binary-name`.
-`--module-param` | No       | A key-value pair of the format `key=value` you wish to pass to the module as a parameter. May be used multiple times. See the documentation for each module to find out what parameters it accepts.
-`--help`         | No       | Show the help text and exit.
+Option         | Required | Description
+-------------- | -------- | ------------
+`repo`         | Yes      | The GitHub repo to install from.
+`tag`          | Yes      | The version of the `--repo` to install from. Follows the syntax described at [Tag Constraint Expressions](https://github.com/gruntwork-io/fetch#tag-constraint-expressions).
+`module-name`  | No       | The name of a module to install. Can be any folder within the `modules` directory of `--repo`. You must specify exactly one of `--module-name` or `--binary-name`.
+`binary-name`  | No       | The name of a binary to install. Can be any file uploaded as a release asset in `--repo`.  You must specify exactly one of `--module-name` or `--binary-name`.
+`module-param` | No       | A key-value pair of the format `key=value` you wish to pass to the module as a parameter. May be used multiple times. See the documentation for each module to find out what parameters it accepts.
+`help`         | No       | Show the help text and exit.
 
 #### Examples
 
