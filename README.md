@@ -28,9 +28,13 @@ want to update a binary or script to add a new parameter, each team has to modif
 painful. 
 
 We believe we can do better by writing our scripts and binaries in a standardized way, and including a minimal tool that 
-streamlines the process of downloading and installing them. Indeed, our goal is to make installing Gruntwork Script 
-Modules as easy as installing a typical package using `apt-get`, `yum`, `npm`, or similar tools. And since we give you 
-100% of the source code, we want it to be clear exactly what happens when you install a Gruntwork Script Module.  
+streamlines the process of downloading and installing them. Also, installation should be streamlined no matter what 
+platform (Windows, MacOS, Linux) you're on. 
+
+Indeed, our goal is to make installing Gruntwork Script  Modules as easy as installing a typical package using `apt-get`, 
+`yum`, `npm`, or similar tools. We would have just used these existing tools, but none offer multi-platform compatibility.
+Finally, since we give you 100% of the source code, we want it to be clear exactly what happens when you install a 
+Gruntwork Script Module.  
 
 ### How `gruntwork-install` Works
 
@@ -101,7 +105,7 @@ Option           | Required | Description
 `--tag`          | Yes      | The version of the `--repo` to install from.<br>Follows the syntax described at [Tag Constraint Expressions](https://github.com/gruntwork-io/fetch#tag-constraint-expressions).
 `--module-name`  | XOR      | The name of a module to install.<br>Can be any folder within the `modules` directory of `--repo`.<br>You must specify exactly one of `--module-name` or `--binary-name`.
 `--binary-name`  | XOR      | The name of a binary to install.<br>Can be any file uploaded as a release asset in `--repo`.<br>You must specify exactly one of `--module-name` or `--binary-name`.
-`--module-param` | No       | A key-value pair of the format `key=value` you wish to pass to the module<br>as a parameter. May be used multiple times.<br>See the documentation for each module to find out what parameters it accepts.
+`--module-param` | No       | A key-value pair of the format `key=value` you wish to pass to the module as a parameter.<br>May be used multiple times.<br>See the documentation for each module to find out what parameters it accepts.
 `--help`         | No       | Show the help text and exit.
 
 #### Examples
