@@ -1,7 +1,6 @@
 #!/bin/bash
 #
-# This script can be usedGruntwork Script Modules from https://github.com/gruntwork-io/script-modules using fetch
-# (https://github.com/gruntwork-io/fetch), and then runs it. The main motivation in writing it is to make installing
+# This script installs Gruntwork Script Modules. The main motivation in writing it is to make installing
 # Gruntwork Script Modules feel as easy as installing a package using apt-get, brew, or yum.
 #
 # Note that if the user specifies neither --tag nor --branch, the latest tag is downloaded.
