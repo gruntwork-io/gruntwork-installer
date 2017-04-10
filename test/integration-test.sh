@@ -18,6 +18,9 @@ echo "Checking that the vault-ssh-helper installed correctly"
 echo "Using gruntwork-install to install a module from the module-ecs repo"
 gruntwork-install --module-name "ecs-scripts" --repo "https://github.com/gruntwork-io/module-ecs" --branch "v0.0.1"
 
+echo "Using gruntwork-install to install a module from the module-ecs repo with --download-dir option"
+gruntwork-install --module-name "ecs-scripts" --repo "https://github.com/gruntwork-io/module-ecs" --branch "v0.0.1" --download-dir "~/tmp"
+
 echo "Checking that the ecs-scripts installed correctly"
 configure-ecs-instance --help
 
