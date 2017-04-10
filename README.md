@@ -116,6 +116,8 @@ Option           | Required | Description
 `--module-name`  | XOR      | The name of a module to install.<br>Can be any folder within the `modules` directory of `--repo`.<br>You must specify exactly one of `--module-name` or `--binary-name`.
 `--binary-name`  | XOR      | The name of a binary to install.<br>Can be any file uploaded as a release asset in `--repo`.<br>You must specify exactly one of `--module-name` or `--binary-name`.
 `--module-param` | No       | A key-value pair of the format `key=value` you wish to pass to the<br> module as a parameter. May be used multiple times.<br>See the documentation for each module to find out what parameters it accepts.
+`--download-dir` | No       | The directory to which the module will be downloaded and from which it will be installed.
+`--branch      ` | No       | Download the latest commit from this branch in --repo. This is an alternative to --tag,<br>and is used only for testing.
 `--help`         | No       | Show the help text and exit.
 
 #### Examples

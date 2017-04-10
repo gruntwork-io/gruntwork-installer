@@ -32,8 +32,8 @@ function print_usage {
   echo
   echo "Optional Arguments:"
   echo
-  echo -e "  --download-dir\t\The directory where the module will be downloaded to and from which it will be installed. Default: $DEFAULT_MODULES_DOWNLOAD_DIR"
   echo -e "  --module-param\tA key-value pair of the format key=value you wish to pass to the module as a parameter. May be used multiple times."
+  echo -e "  --download-dir\t\The directory to which the module will be downloaded and from which it will be installed. Default: $DEFAULT_MODULES_DOWNLOAD_DIR"
   echo -e "  --branch\t\tDownload the latest commit from this branch in --repo. This is an alternative to --tag, used only for testing."
   echo -e "  --help\t\tShow this help text and exit."
 
