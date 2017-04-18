@@ -188,7 +188,7 @@ gruntwork-install --module-name 'ecs-scripts' --repo 'https://github.com/gruntwo
 ```
 
 In https://github.com/gruntwork-io/module-ecs, we download the contents of `/modules/ecs-scripts` and run 
-`/modules/esc-scripts/install.sh`.
+`/modules/ecs-scripts/install.sh`.
 
 ## Running tests
 
