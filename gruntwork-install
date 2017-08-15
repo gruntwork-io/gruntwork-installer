@@ -185,10 +185,12 @@ function run_module {
   local readonly module_name="$1"
   local readonly download_dir="$2"
   shift 2
-  local readonly module_params="$@"
+  local readonly module_params=($@)
+  local readonly install_script_path="${download_dir}/${module_name}/${MODULE_INSTALL_FILE_NAME}"
 
-  chmod -R u+x "${download_dir}/${module_name}"
-  ${download_dir}/${module_name}/${MODULE_INSTALL_FILE_NAME} $module_params
+  echo "Executing $install_script_path"
+  chmod u+x "$install_script_path"
+  eval "$install_script_path ${module_params[@]}"
 }
 
 function install_script_module {
