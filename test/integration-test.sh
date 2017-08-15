@@ -5,6 +5,7 @@
 set -e
 
 readonly LOCAL_INSTALL_URL="file:///src/gruntwork-install"
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "Using local copy of bootstrap installer to install local copy of gruntwork-install"
 ./src/bootstrap-gruntwork-installer.sh --download-url "$LOCAL_INSTALL_URL" --version "ignored-for-local-install"
@@ -19,7 +20,7 @@ echo "Checking that the ecs-scripts installed correctly"
 configure-ecs-instance --help
 
 echo "Using gruntwork-install to install a module from the gruntwork-install repo and passing args to it via --module-param"
-gruntwork-install --module-name "dummy-module" --repo "https://github.com/gruntwork-io/gruntwork-installer" --branch "fix-args" --module-param "file-to-cat=README.md"
+gruntwork-install --module-name "dummy-module" --repo "https://github.com/gruntwork-io/gruntwork-installer" --branch "fix-args" --module-param "file-to-cat=$SCRIPT_DIR/integration-test.sh"
 
 echo "Using gruntwork-install to install a binary from the gruntkms repo"
 gruntwork-install --binary-name "gruntkms" --repo "https://github.com/gruntwork-io/gruntkms" --tag "v0.0.1"
