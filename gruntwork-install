@@ -70,7 +70,7 @@ function assert_env_var_not_empty {
   local readonly var_value="${!var_name}"
 
   if [[ -z "$var_value" ]]; then
-    echo "ERROR. Required environment $var_name not set."
+    echo "ERROR. Required environment variable $var_name not set."
     exit 1
   fi
 }
