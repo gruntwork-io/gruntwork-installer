@@ -178,7 +178,7 @@ function convert_module_params_format {
   local readonly key_value_pair="$1"
   local readonly key="${key_value_pair%%=*}"
   local readonly val="${key_value_pair#*=}"
-  echo "--${key} '${val}'"
+  echo "--${key} \"${val}\""
 }
 
 function run_module {
@@ -188,7 +188,7 @@ function run_module {
   local readonly module_params=($@)
   local readonly install_script_path="${download_dir}/${module_name}/${MODULE_INSTALL_FILE_NAME}"
 
-  echo "Executing $install_script_path"
+  echo "Executing $install_script_path ${module_params[@]}"
   chmod u+x "$install_script_path"
   eval "$install_script_path ${module_params[@]}"
 }
