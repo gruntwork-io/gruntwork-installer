@@ -27,21 +27,50 @@ function print_usage {
   echo
   echo "Specify exactly one of:"
   echo
-  echo -e "  --module-name\t\The name of a module to install. Can be any folder within the $MODULES_DIR directory of --repo."
+  echo -e "  --module-name\t\tThe name of a module to install. Can be any folder within the $MODULES_DIR directory of --repo."
   echo -e "  --binary-name\t\tThe name of a binary to install. Can be any file uploaded as a release asset in --repo."
   echo
   echo "Optional Arguments:"
   echo
   echo -e "  --module-param\tA key-value pair of the format key=value you wish to pass to the module as a parameter. May be used multiple times."
-  echo -e "  --download-dir\t\The directory to which the module will be downloaded and from which it will be installed. Default: $DEFAULT_MODULES_DOWNLOAD_DIR"
+  echo -e "  --download-dir\tThe directory to which the module will be downloaded and from which it will be installed. Default: $DEFAULT_MODULES_DOWNLOAD_DIR"
   echo -e "  --branch\t\tDownload the latest commit from this branch in --repo. This is an alternative to --tag, used only for testing."
   echo -e "  --help\t\tShow this help text and exit."
 
   echo
   echo "Example:"
   echo
-  echo "  gruntwork-install --module-name 'vault-ssh-helper' --repo 'https://github.com/gruntwork-io/script-modules' --tag '~>0.0.3' --module-param 'install-dir=/opt/vault-ssh-helper' --module-param 'owner=ubuntu'"
+  echo "  gruntwork-install \\"
+  echo "    --module-name 'vault-ssh-helper' \\"
+  echo "    --repo 'https://github.com/gruntwork-io/script-modules' \\"
+  echo "    --tag '~>0.0.3' \\"
+  echo "    --module-param 'install-dir=/opt/vault-ssh-helper' \\"
+  echo "    --module-param 'owner=ubuntu'"
   echo
+}
+
+function log {
+  local readonly level="$1"
+  local readonly message="$2"
+  local readonly timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+  local readonly scriptname="$(basename "$0")"
+
+  >&2 echo -e "${timestamp} [${level}] [$scriptname] ${message}"
+}
+
+function log_info {
+  local readonly message="$1"
+  log "INFO" "$message"
+}
+
+function log_warn {
+  local readonly message="$1"
+  log "WARN" "$message"
+}
+
+function log_error {
+  local readonly message="$1"
+  log "ERROR" "$message"
 }
 
 # Assert that a given binary is installed on this box
@@ -49,7 +78,7 @@ function assert_is_installed {
   local readonly name="$1"
 
   if [[ ! $(command -v ${name}) ]]; then
-    echo "ERROR: The binary '$name' is required by this script but is not installed or in the system's PATH."
+    log_error "The binary '$name' is required by this script but is not installed or in the system's PATH."
     exit 1
   fi
 }
@@ -59,7 +88,7 @@ function assert_not_empty {
   local readonly arg_value="$2"
 
   if [[ -z "$arg_value" ]]; then
-    echo "ERROR: The value for '$arg_name' cannot be empty"
+    log_error "The value for '$arg_name' cannot be empty"
     print_usage
     exit 1
   fi
@@ -70,7 +99,7 @@ function assert_env_var_not_empty {
   local readonly var_value="${!var_name}"
 
   if [[ -z "$var_value" ]]; then
-    echo "ERROR. Required environment variable $var_name not set."
+    log_error "Required environment variable $var_name not set."
     exit 1
   fi
 }
@@ -89,7 +118,7 @@ function fetch_script_module {
 
   # Note that fetch can safely handle blank arguments for --tag or --branch
   # If both --tag and --branch are specified, --branch will be used
-  echo "Downloading module $module_name from $repo"
+  log_info "Downloading module $module_name from $repo"
   fetch --repo="$repo" --tag="$tag" --branch="$branch" --source-path="/modules/$module_name" "$download_dir/$module_name"
 }
 
@@ -112,7 +141,7 @@ function fetch_binary {
 
   fetch --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir"
 
-  echo "Moving $full_download_path to $full_dest_path and setting execute permissions"
+  log_info "Moving $full_download_path to $full_dest_path and setting execute permissions"
   sudo mv "$full_download_path" "$full_dest_path"
   sudo chmod u+x "$full_dest_path"
 }
@@ -126,7 +155,7 @@ function validate_module {
   local reaodnly repo="$5"
 
   if [[ ! -e "$download_dir/$module_name" ]]; then
-    echo "ERROR: No files were downloaded. Are you sure \"$module_name\" is a valid Script Module in $repo (tag = $tag, branch = $branch)?"
+    log_error "No files were downloaded. Are you sure \"$module_name\" is a valid Script Module in $repo (tag = $tag, branch = $branch)?"
     exit 1
   fi
 }
@@ -188,7 +217,7 @@ function run_module {
   local readonly module_params=($@)
   local readonly install_script_path="${download_dir}/${module_name}/${MODULE_INSTALL_FILE_NAME}"
 
-  echo "Executing $install_script_path ${module_params[@]}"
+  log_info "Executing $install_script_path ${module_params[@]}"
   chmod u+x "$install_script_path"
   eval "$install_script_path ${module_params[@]}"
 }
@@ -254,26 +283,26 @@ function install_script_module {
   assert_not_empty "--repo" "$repo"
 
   if [[ ( -z "$module_name" && -z "$binary_name" ) || ( ! -z "$module_name" && ! -z "$binary_name" ) ]]; then
-    echo "ERROR: You must specify exactly one of --module-name or --binary-name."
+    log_error "You must specify exactly one of --module-name or --binary-name."
     exit 1
   fi
 
   if [[ ! -z "$binary_name" && -z "$tag" ]]; then
-    echo "ERROR: --binary-name can only be used if you specify a release via --tag."
+    log_error "--binary-name can only be used if you specify a release via --tag."
     exit 1
   fi
 
   if [[ ! -z "$module_name" ]]; then
-    echo "Installing from $module_name..."
+    log_info "Installing from $module_name..."
     fetch_script_module "$module_name" "$tag" "$branch" "$download_dir" "$repo"
     validate_module "$module_name" "$download_dir" "$tag" "$branch" "$repo"
     run_module "$module_name" "$download_dir" "${module_params[@]}"
   else
-    echo "Installing $binary_name..."
+    log_info "Installing $binary_name..."
     fetch_binary "$binary_name" "$tag" "$download_dir" "$repo"
   fi
 
-  echo "Success!"
+  log_info "Success!"
 }
 
 install_script_module "$@"
