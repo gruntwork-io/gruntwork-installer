@@ -12,7 +12,7 @@ Our solution is to make the `gruntwork-install` tool open source and to publish 
 script that anyone can use to install `gruntwork-install` itself. To use it, execute the following:
 
 ```
-curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.18
+curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.19
 ```
 
 Notice the `--version` parameter at the end where you specify which version of `gruntwork-install` to install. See the
