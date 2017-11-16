@@ -123,6 +123,8 @@ function get_os_arch_gox_format {
     echo "amd64"
   elif $(string_contains "$arch" "386"); then
     echo "386"
+  elif $(string_contains "$arch" "686"); then
+    echo "386" # Not a typo; 686 is also 32-bit and should work with 386 binaries
   elif $(string_contains "$arch" "arm"); then
     echo "arm"
   fi
