@@ -27,7 +27,7 @@
     "destination": "/tmp/packer-files"
   },{
     "type": "shell",
-    "inline": "curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version {{user `gruntwork_installer_version`}}"
+    "inline": "curl -LsS https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version {{user `gruntwork_installer_version`}}"
   },{
     "type": "shell",
     "inline": [
