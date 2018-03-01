@@ -29,6 +29,9 @@ function print_usage {
   echo
   echo -e "  --module-name\t\tThe name of a module to install. Can be any folder within the $MODULES_DIR directory of --repo."
   echo -e "  --binary-name\t\tThe name of a binary to install. Can be any file uploaded as a release asset in --repo."
+  echo -e "  --binary-sha256-checksum\t\tThe SHA256 checksum of the binary specified by --binary-name. Should be exactly 64 characters."
+  echo -e "  --binary-sha512-checksum\t\tThe SHA512 checksum of the binary specified by --binary-name. Should be exactly 128 characters."
+  echo -e "  --binary-name\t\tThe name of a binary to install. Can be any file uploaded as a release asset in --repo."
   echo
   echo "Optional Arguments:"
   echo
@@ -128,6 +131,8 @@ function fetch_binary {
   local readonly tag="$2"
   local readonly download_dir="$3"
   local readonly repo="$4"
+  local readonly sha256_checksum="$5"
+  local readonly sha512_checksum="$6"
 
   local binary_name_full=""
   binary_name_full=$(determine_binary_name "$binary_name")
@@ -139,7 +144,13 @@ function fetch_binary {
   mkdir -p "$download_dir"
   rm -f "$download_dir/$binary_name_full"
 
-  fetch --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir"
+  if [[ ! -z "$sha256_checksum" ]]; then
+    fetch --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir" --release-asset-checksum-algo "sha256" --release-asset-checksum "$sha256_checksum"
+   elif [[ ! -z "$sha512_checksum" ]]; then
+    fetch --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir" --release-asset-checksum-algo "sha512" --release-asset-checksum "$sha512_checksum"
+  else
+    fetch --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir"
+  fi
 
   log_info "Moving $full_download_path to $full_dest_path and setting execute permissions"
   sudo mv "$full_download_path" "$full_dest_path"
@@ -227,6 +238,8 @@ function install_script_module {
   local branch=""
   local module_name=""
   local binary_name=""
+  local binary_sha256_checksum=""
+  local binary_sha512_checksum=""
   local repo=""
   local download_dir="$DEFAULT_MODULES_DOWNLOAD_DIR"
   local module_params=()
@@ -249,6 +262,14 @@ function install_script_module {
         ;;
       --binary-name)
         binary_name="$2"
+        shift
+        ;;
+      --binary-sha256-checksum)
+        binary_sha256_checksum="$2"
+        shift
+        ;;
+      --binary-sha512-checksum)
+        binary_sha512_checksum="$2"
         shift
         ;;
       --repo)
@@ -292,6 +313,11 @@ function install_script_module {
     exit 1
   fi
 
+  if [[ ! -z "$binary_sha256_checksum" && ! -z "$binary_sha512_checksum" ]]; then
+    log_error "You must specify at most one of --binary-sha256-checksum and --binary-sha512-checksum"
+    exit 1
+  fi
+
   if [[ ! -z "$module_name" ]]; then
     log_info "Installing from $module_name..."
     fetch_script_module "$module_name" "$tag" "$branch" "$download_dir" "$repo"
@@ -299,7 +325,7 @@ function install_script_module {
     run_module "$module_name" "$download_dir" "${module_params[@]}"
   else
     log_info "Installing $binary_name..."
-    fetch_binary "$binary_name" "$tag" "$download_dir" "$repo"
+    fetch_binary "$binary_name" "$tag" "$download_dir" "$repo" "$binary_sha256_checksum" "$binary_sha512_checksum"
   fi
 
   log_info "Success!"
