@@ -1,14 +1,18 @@
 # Gruntwork Installer
 
-`gruntwork-install` is a bash script you run to easily download and install "Gruntwork Modules." 
+`gruntwork-install` is a bash script you run to easily download and install "Gruntwork Modules".
+
+## Compatibility
+
+Tested under CentOS 7, latest Amazon Linux and Ubuntu 16.04.
 
 ## Quick Start
 
 ### Install gruntwork-install
 
-If `gruntwork-install` is our approach for installing Gruntwork Modules, how do we install `gruntwork-install` itself? 
+If `gruntwork-install` is our approach for installing Gruntwork Modules, how do we install `gruntwork-install` itself?
 
-Our solution is to make the `gruntwork-install` tool open source and to publish a `bootstrap-gruntwork-installer.sh` 
+Our solution is to make the `gruntwork-install` tool open source and to publish a `bootstrap-gruntwork-installer.sh`
 script that anyone can use to install `gruntwork-install` itself. To use it, execute the following:
 
 ```
@@ -36,16 +40,16 @@ export GITHUB_OAUTH_TOKEN="(your secret token)"
 
 Once that environment variable is set, you can run `gruntwork-install` with the following options:
 
-Option           | Required | Description
----------------- | -------- | ------------
-`--repo`         | Yes      | The GitHub repo to install from.
-`--tag`          | Yes      | The version of the `--repo` to install from.<br>Follows the syntax described at [Tag Constraint Expressions](https://github.com/gruntwork-io/fetch#tag-constraint-expressions).
-`--module-name`  | XOR      | The name of a module to install.<br>Can be any folder within the `modules` directory of `--repo`.<br>You must specify exactly one of `--module-name` or `--binary-name`.
-`--binary-name`  | XOR      | The name of a binary to install.<br>Can be any file uploaded as a release asset in `--repo`.<br>You must specify exactly one of `--module-name` or `--binary-name`.
-`--module-param` | No       | A key-value pair of the format `key=value` you wish to pass to the<br> module as a parameter. May be used multiple times.<br>See the documentation for each module to find out what parameters it accepts.
-`--download-dir` | No       | The directory to which the module will be downloaded and from which it will be installed.
-`--branch      ` | No       | Download the latest commit from this branch in --repo. This is an alternative to --tag,<br>and is used only for testing.
-`--help`         | No       | Show the help text and exit.
+| Option           | Required | Description                                                                                                                                                                                                |
+| ---------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--repo`         | Yes      | The GitHub repo to install from.                                                                                                                                                                           |
+| `--tag`          | Yes      | The version of the `--repo` to install from.<br>Follows the syntax described at [Tag Constraint Expressions](https://github.com/gruntwork-io/fetch#tag-constraint-expressions).                            |
+| `--module-name`  | XOR      | The name of a module to install.<br>Can be any folder within the `modules` directory of `--repo`.<br>You must specify exactly one of `--module-name` or `--binary-name`.                                   |
+| `--binary-name`  | XOR      | The name of a binary to install.<br>Can be any file uploaded as a release asset in `--repo`.<br>You must specify exactly one of `--module-name` or `--binary-name`.                                        |
+| `--module-param` | No       | A key-value pair of the format `key=value` you wish to pass to the<br> module as a parameter. May be used multiple times.<br>See the documentation for each module to find out what parameters it accepts. |
+| `--download-dir` | No       | The directory to which the module will be downloaded and from which it will be installed.                                                                                                                  |
+| `--branch`       | No       | Download the latest commit from this branch in --repo. This is an alternative to --tag,<br>and is used only for testing.                                                                                   |
+| `--help`         | No       | Show the help text and exit.                                                                                                                                                                               |
 
 #### Examples
 
@@ -69,7 +73,7 @@ repo](https://github.com/gruntwork-io/script-modules), passing two custom parame
 gruntwork-install --module-name 'vault-ssh-helper' --repo 'https://github.com/gruntwork-io/script-modules' --tag '0.0.3' --module-param 'install-dir=/opt/vault-ssh-helper' --module-param 'owner=ubuntu'
 ```
 
-##### Example 3: Download and Install a Binary Module 
+##### Example 3: Download and Install a Binary Module
 
 Install the `gruntkms` binary from the `v0.0.1` release of the [gruntkms
 repo](https://github.com/gruntwork-io/gruntkms):
@@ -92,61 +96,66 @@ and then uses it to install several modules:
   "variables": {
     "github_auth_token": "{{env `GITHUB_OAUTH_TOKEN`}}"
   },
-  "builders": [{
-    "ami_name": "gruntwork-install-example-{{isotime | clean_ami_name}}",
-    "instance_type": "t2.micro",
-    "region": "us-east-1",
-    "type": "amazon-ebs",
-    "source_ami": "ami-fce3c696",
-    "ssh_username": "ubuntu"
-  }],
-  "provisioners": [{
-    "type": "shell",
-    "inline": "curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.16"
-  },{
-    "type": "shell",
-    "inline": [
-      "gruntwork-install --module-name 'ecs-scripts' --repo 'https://github.com/gruntwork-io/module-ecs' --tag 'v0.0.1'",
-      "gruntwork-install --module-name 'vault-ssh-helper' --repo 'https://github.com/gruntwork-io/script-modules' --tag 'v0.0.3' --module-param 'install-dir=/opt/vault-ssh-helper' --module-param 'owner=ubuntu'",
-      "gruntwork-install --binary-name 'gruntkms' --repo 'https://github.com/gruntwork-io/gruntkms' --tag 'v0.0.1'"
-    ],
-    "environment_vars": [
-      "GITHUB_OAUTH_TOKEN={{user `github_auth_token`}}"
-    ]
-  }]
+  "builders": [
+    {
+      "ami_name": "gruntwork-install-example-{{isotime | clean_ami_name}}",
+      "instance_type": "t2.micro",
+      "region": "us-east-1",
+      "type": "amazon-ebs",
+      "source_ami": "ami-fce3c696",
+      "ssh_username": "ubuntu"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline":
+        "curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.16"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "gruntwork-install --module-name 'ecs-scripts' --repo 'https://github.com/gruntwork-io/module-ecs' --tag 'v0.0.1'",
+        "gruntwork-install --module-name 'vault-ssh-helper' --repo 'https://github.com/gruntwork-io/script-modules' --tag 'v0.0.3' --module-param 'install-dir=/opt/vault-ssh-helper' --module-param 'owner=ubuntu'",
+        "gruntwork-install --binary-name 'gruntkms' --repo 'https://github.com/gruntwork-io/gruntkms' --tag 'v0.0.1'"
+      ],
+      "environment_vars": ["GITHUB_OAUTH_TOKEN={{user `github_auth_token`}}"]
+    }
+  ]
 }
 ```
 
 ## Motivation
+
 At [Gruntwork](http://www.gruntwork.io/), we've developed a number of scripts and binaries, most of them in private GitHub
 repos, that perform common infrastructure tasks such as setting up continuous integration, monitoring, log aggregation,
-and SSH access. Being able to use these "modules" of code typically involves many steps: you download the files 
-(possibly from a private GitHub repo), change their permissions, and run them with the parameters that make sense for 
+and SSH access. Being able to use these "modules" of code typically involves many steps: you download the files
+(possibly from a private GitHub repo), change their permissions, and run them with the parameters that make sense for
 your environment.
 
 That basically means lots of custom `bash` code copied differently across multiple software teams in multiple different
-contexts. Worse, if we want to update a binary or script to add a new parameter, each team has to modify their own custom 
-code, which can be painful. 
+contexts. Worse, if we want to update a binary or script to add a new parameter, each team has to modify their own custom
+code, which can be painful.
 
-We believe we can do better by writing our scripts and binaries in a standardized way, and including a minimal tool that 
-streamlines the process of downloading and installing them. Also, since we give you 100% of the source code, we want it 
-to be clear exactly what happens when you install a Gruntwork Module.  
- 
-Finally, installation should be streamlined no matter what platform (Windows, MacOS, Linux) you're on. Indeed, our goal 
-is to make installing Gruntwork Script  Modules as easy as installing a typical package using `apt-get`, `yum`, `npm`, 
+We believe we can do better by writing our scripts and binaries in a standardized way, and including a minimal tool that
+streamlines the process of downloading and installing them. Also, since we give you 100% of the source code, we want it
+to be clear exactly what happens when you install a Gruntwork Module.
+
+Finally, installation should be streamlined no matter what platform (Windows, MacOS, Linux) you're on. Indeed, our goal
+is to make installing Gruntwork Script Modules as easy as installing a typical package using `apt-get`, `yum`, `npm`,
 or similar tools. We would have just used these existing tools, but none offer multi-platform compatibility.
 
 ## What's a Gruntwork Module?
 
-A Gruntwork Module is a collection of one or more bash scripts and/or binaries maintained by Gruntwork that can be used to 
+A Gruntwork Module is a collection of one or more bash scripts and/or binaries maintained by Gruntwork that can be used to
 add functionality to or configure an environment. There are multiple types of Gruntwork Modules:
 
-- **Script Modules:** A collection of one or more files and scripts; installed with an `install.sh` script.
-- **Binary Modules:** A single OS-specific executable binary.
+* **Script Modules:** A collection of one or more files and scripts; installed with an `install.sh` script.
+* **Binary Modules:** A single OS-specific executable binary.
 
 Additional module types may be introduced in the future.
 
-As an example, we have Script Modules for installing a CloudWatch Logs agent, optimizing syslog settings, and setting up 
+As an example, we have Script Modules for installing a CloudWatch Logs agent, optimizing syslog settings, and setting up
 automatic security updates. We have a Binary Module for streamlining the use of Amazon Key Management Service (KMS).
 
 Gruntwork sells [Infrastructure Packages](https://blog.gruntwork.io/gruntwork-infrastructure-packages-7434dc77d0b1#.6bwor6wxc).
@@ -175,10 +184,10 @@ That's it!
 You can use `gruntwork-install` with any GitHub repo, not just repos maintained by Gruntwork.
 
 That means that to create an installable Script Module, all you have to do is put it in the `modules` folder of
-a GitHub repo to which you have access and include an `install.sh` script. To create a Binary Module, you just publish 
-it to a GitHub release with the name format `<NAME>_<OS>_<ARCH>`. 
+a GitHub repo to which you have access and include an `install.sh` script. To create a Binary Module, you just publish
+it to a GitHub release with the name format `<NAME>_<OS>_<ARCH>`.
 
-### Example 
+### Example
 
 For example, in your Packer and Docker templates, you can use `gruntwork-install` to install the [ecs-scripts
 module](https://github.com/gruntwork-io/module-ecs/tree/master/modules/ecs-scripts) as follows:
@@ -187,7 +196,7 @@ module](https://github.com/gruntwork-io/module-ecs/tree/master/modules/ecs-scrip
 gruntwork-install --module-name 'ecs-scripts' --repo 'https://github.com/gruntwork-io/module-ecs' --tag 'v0.0.1'
 ```
 
-In https://github.com/gruntwork-io/module-ecs, we download the contents of `/modules/ecs-scripts` and run 
+In https://github.com/gruntwork-io/module-ecs, we download the contents of `/modules/ecs-scripts` and run
 `/modules/ecs-scripts/install.sh`.
 
 ## Running tests
@@ -203,7 +212,7 @@ To run the tests:
    the environment variable `GITHUB_OAUTH_TOKEN`.
 1. `./_ci/run-tests.sh`
 
-## Security 
+## Security
 
 ### Is it safe to pipe URLs into bash?
 
@@ -214,7 +223,7 @@ do about them.
 
 #### Risk #1: You don't know what the script is doing, so you shouldn't blindly execute it.
 
-This is true of *all* installers. For example, have you ever inspected the install code before running `apt-get install`
+This is true of _all_ installers. For example, have you ever inspected the install code before running `apt-get install`
 or `brew install` or double clicking a `.dmg` or `.exe` file? If anything, a shell script is the most transparent
 installer out there, as it's one of the few that allows you to inspect the code (feel free to do so, as this script is
 open source!). The reality is that you either trust the developer or you don't. And eventually, you automate the
