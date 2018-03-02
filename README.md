@@ -40,16 +40,18 @@ export GITHUB_OAUTH_TOKEN="(your secret token)"
 
 Once that environment variable is set, you can run `gruntwork-install` with the following options:
 
-| Option           | Required | Description                                                                                                                                                                                                |
-| ---------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--repo`         | Yes      | The GitHub repo to install from.                                                                                                                                                                           |
-| `--tag`          | Yes      | The version of the `--repo` to install from.<br>Follows the syntax described at [Tag Constraint Expressions](https://github.com/gruntwork-io/fetch#tag-constraint-expressions).                            |
-| `--module-name`  | XOR      | The name of a module to install.<br>Can be any folder within the `modules` directory of `--repo`.<br>You must specify exactly one of `--module-name` or `--binary-name`.                                   |
-| `--binary-name`  | XOR      | The name of a binary to install.<br>Can be any file uploaded as a release asset in `--repo`.<br>You must specify exactly one of `--module-name` or `--binary-name`.                                        |
-| `--module-param` | No       | A key-value pair of the format `key=value` you wish to pass to the<br> module as a parameter. May be used multiple times.<br>See the documentation for each module to find out what parameters it accepts. |
-| `--download-dir` | No       | The directory to which the module will be downloaded and from which it will be installed.                                                                                                                  |
-| `--branch`       | No       | Download the latest commit from this branch in --repo. This is an alternative to --tag,<br>and is used only for testing.                                                                                   |
-| `--help`         | No       | Show the help text and exit.                                                                                                                                                                               |
+Option                      | Required | Description
+--------------------------- | -------- | ------------
+`--repo`                    | Yes      | The GitHub repo to install from.
+`--tag`                     | Yes      | The version of the `--repo` to install from.<br>Follows the syntax described at [Tag Constraint Expressions](https://github.com/gruntwork-io/fetch#tag-constraint-expressions).
+`--module-name`             | XOR      | The name of a module to install.<br>Can be any folder within the `modules` directory of `--repo`.<br>You must specify exactly one of `--module-name` or `--binary-name`.
+`--binary-name`             | XOR      | The name of a binary to install.<br>Can be any file uploaded as a release asset in `--repo`.<br>You must specify exactly one of `--module-name` or `--binary-name`.
+`--binary-sha256-checksum`  | No       | The SHA256 checksum of the binary specified by `--binary-name`. Should be exactly 64 characters..
+`--binary-sha512-checksum`  | No       | The SHA512 checksum of the binary specified by `--binary-name`. Should be exactly 128 characters..
+`--module-param`            | No       | A key-value pair of the format `key=value` you wish to pass to the<br> module as a parameter. May be used multiple times.<br>See the documentation for each module to find out what parameters it accepts.
+`--download-dir`            | No       | The directory to which the module will be downloaded and from which it will be installed.
+`--branch      `            | No       | Download the latest commit from this branch in --repo. This is an alternative to --tag,<br>and is used only for testing.
+`--help`                    | No       | Show the help text and exit.
 
 #### Examples
 
@@ -213,6 +215,17 @@ To run the tests:
 1. `./_ci/run-tests.sh`
 
 ## Security
+
+### Validate the Downloaded Binary
+
+Gruntwork-install will retrieve the desired GitHub Release Asset specified by the `--binary-name` property, but how can
+we confirm that this binary has not been tampered with? In short, we trust that the maintainer has been responsible and
+not allowed a malicious third-party to corrupt the Release Asset.
+
+You can narrow the scope of this trust by computing a checksum on a Release Asset using a UNIX command like
+`shasum -a 256 /path/to/file` when you first download the release. You can then feed this value (e.g. `b0b30cc24aed1b8cded2df903183b884c77f086efffc36ef19876d1c55fef93d`)
+to `--binary-sha256-checksum` or `--binary-sha512-checksum`. If the checksum does not match, gruntwork-install will fail
+with an error. This way, you are at least notified if the Release Asset you initially downloaded has since been changed.
 
 ### Is it safe to pipe URLs into bash?
 
