@@ -122,7 +122,7 @@ function fetch_script_module {
   # Note that fetch can safely handle blank arguments for --tag or --branch
   # If both --tag and --branch are specified, --branch will be used
   log_info "Downloading module $module_name from $repo"
-  fetch --repo="$repo" --tag="$tag" --branch="$branch" --source-path="/modules/$module_name" "$download_dir/$module_name"
+  fetch --repo="$repo" --tag="$tag" --branch="$branch" --source-path="/modules/$module_name" --resolve-symlinks "$download_dir/$module_name"
 }
 
 # Download a binary asset from a GitHub release using fetch (https://github.com/gruntwork-io/fetch)
