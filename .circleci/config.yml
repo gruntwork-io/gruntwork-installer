@@ -1,0 +1,23 @@
+defaults: &defaults
+  working_directory: /home/circleci/.go_workspace/src/github.com/gruntwork-io/gruntwork-installer
+  machine: true
+
+version: 2
+jobs:
+  test:
+    <<: *defaults
+    steps:
+      - checkout
+      - run:
+          name: run tests
+          command: |
+            ./_ci/run-tests.sh
+
+workflows:
+  version: 2
+  install-and-test:
+    jobs:
+      - test:
+          filters:
+            tags:
+              only: /^v.*/
