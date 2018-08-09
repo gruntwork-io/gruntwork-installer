@@ -9,9 +9,9 @@ jobs:
     steps:
       - checkout
       - run:
-        name: run tests
-        command: |
-          ./_ci/run-tests.sh
+          name: run tests
+          command: |
+            ./_ci/run-tests.sh
 
 workflows:
   version: 2
