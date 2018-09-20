@@ -31,7 +31,6 @@ function print_usage {
   echo -e "  --binary-name\t\tThe name of a binary to install. Can be any file uploaded as a release asset in --repo."
   echo -e "  --binary-sha256-checksum\t\tThe SHA256 checksum of the binary specified by --binary-name. Should be exactly 64 characters."
   echo -e "  --binary-sha512-checksum\t\tThe SHA512 checksum of the binary specified by --binary-name. Should be exactly 128 characters."
-  echo -e "  --binary-name\t\tThe name of a binary to install. Can be any file uploaded as a release asset in --repo."
   echo
   echo "Optional Arguments:"
   echo
