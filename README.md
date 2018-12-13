@@ -1,3 +1,4 @@
+[![Maintained by Gruntwork.io](https://img.shields.io/badge/maintained%20by-gruntwork.io-%235849a6.svg)](https://gruntwork.io/?ref=gruntwork_installer_repo)
 # Gruntwork Installer
 
 `gruntwork-install` is a bash script you run to easily download and install "Gruntwork Modules".
