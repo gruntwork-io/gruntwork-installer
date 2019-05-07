@@ -220,6 +220,15 @@ function convert_module_params_format {
   echo "--${key} \"${val}\""
 }
 
+
+# Check if the repo is anonymously accessible. This indicates that the repo is public, and will skip checks for the
+# token.
+function repo_is_public {
+  local readonly repo_url="$1"
+
+  curl --silent --fail "$repo_url" > /dev/null
+}
+
 function run_module {
   local readonly module_name="$1"
   local readonly download_dir="$2"
@@ -298,9 +307,13 @@ function install_script_module {
     shift
   done
 
-  assert_is_installed fetch
-  assert_env_var_not_empty "GITHUB_OAUTH_TOKEN"
   assert_not_empty "--repo" "$repo"
+  assert_is_installed fetch
+
+  if ! repo_is_public "$repo"; then
+    log_info "Repository is not public. GITHUB_OAUTH_TOKEN environment variable is required."
+    assert_env_var_not_empty "GITHUB_OAUTH_TOKEN"
+  fi
 
   if [[ ( -z "$module_name" && -z "$binary_name" ) || ( ! -z "$module_name" && ! -z "$binary_name" ) ]]; then
     log_error "You must specify exactly one of --module-name or --binary-name."

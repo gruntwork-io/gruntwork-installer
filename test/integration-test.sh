@@ -27,3 +27,18 @@ gruntwork-install --binary-name "gruntkms" --repo "https://github.com/gruntwork-
 
 echo "Checking that gruntkms installed correctly"
 gruntkms --help
+
+echo "Unsetting GITHUB_OAUTH_TOKEN to test installing from public repo (terragrunt)"
+unset GITHUB_OAUTH_TOKEN
+
+echo "Verifying private repo access is denied"
+if gruntwork-install --binary-name "gruntkms" --repo "https://github.com/gruntwork-io/gruntkms" --tag "v0.0.1" ; then
+  echo "ERROR: was able to access private repo"
+  exit 1
+fi
+
+echo "Verifying public repo access is allowed"
+gruntwork-install --repo 'https://github.com/gruntwork-io/terragrunt' --binary-name terragrunt --tag '~>v0.18.4'
+
+echo "Checking that terragrunt installed correctly"
+terragrunt --help
