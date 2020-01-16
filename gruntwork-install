@@ -43,10 +43,9 @@ function print_usage {
   echo "Example:"
   echo
   echo "  gruntwork-install \\"
-  echo "    --module-name 'vault-ssh-helper' \\"
-  echo "    --repo 'https://github.com/gruntwork-io/script-modules' \\"
-  echo "    --tag '~>0.0.3' \\"
-  echo "    --module-param 'install-dir=/opt/vault-ssh-helper' \\"
+  echo "    --module-name 'fail2ban' \\"
+  echo "    --repo 'https://github.com/gruntwork-io/module-security' \\"
+  echo "    --module-param 'install-dir=/opt/fail2ban' \\"
   echo "    --module-param 'owner=ubuntu'"
   echo
 }
