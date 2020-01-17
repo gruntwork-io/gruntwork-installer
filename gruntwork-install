@@ -45,8 +45,6 @@ function print_usage {
   echo "  gruntwork-install \\"
   echo "    --module-name 'fail2ban' \\"
   echo "    --repo 'https://github.com/gruntwork-io/module-security' \\"
-  echo "    --module-param 'install-dir=/opt/fail2ban' \\"
-  echo "    --module-param 'owner=ubuntu'"
   echo
 }
 
