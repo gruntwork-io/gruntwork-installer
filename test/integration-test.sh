@@ -38,7 +38,7 @@ if gruntwork-install --binary-name "gruntkms" --repo "https://github.com/gruntwo
 fi
 
 echo "Verifying public repo access is allowed"
-gruntwork-install --repo 'https://github.com/gruntwork-io/terragrunt' --binary-name terragrunt --tag '~>v0.18.4'
+gruntwork-install --repo 'https://github.com/gruntwork-io/terragrunt' --binary-name terragrunt --tag '~>v0.21.0'
 
 echo "Checking that terragrunt installed correctly"
 terragrunt --help
