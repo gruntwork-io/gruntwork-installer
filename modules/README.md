@@ -2,4 +2,4 @@
 
 This folder contains Gruntwork Script Modules that are commonly used and made freely available.
 
-See [Gruntwork Modules](../add-packer-file-copy#gruntwork-modules) to learn more about what a Gruntwork Script Module is.
+See [Gruntwork Modules](packer-file-copy/README.md) to learn more about what a Gruntwork Script Module is.

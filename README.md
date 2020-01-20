@@ -68,12 +68,13 @@ gruntwork-install --module-name 'ecs-scripts' --repo 'https://github.com/gruntwo
 
 ##### Example 2: Download and Install a Script Module with Parameters
 
-Install the [vault-ssh-helper
-module](https://github.com/gruntwork-io/script-modules/tree/master/modules/vault-ssh-helper) from the [script-modules
-repo](https://github.com/gruntwork-io/script-modules), passing two custom parameters to it:
+Install the [fail2ban
+module](https://github.com/gruntwork-io/module-security/tree/master/modules/fail2ban) from the [module-security
+repo](https://github.com/gruntwork-io/module-security), passing two custom parameters to it:
+
 
 ```
-gruntwork-install --module-name 'vault-ssh-helper' --repo 'https://github.com/gruntwork-io/script-modules' --tag '0.0.3' --module-param 'install-dir=/opt/vault-ssh-helper' --module-param 'owner=ubuntu'
+gruntwork-install --module-name 'fail2ban' --repo 'module-security' -module-param 'ban-time=3600'
 ```
 
 ##### Example 3: Download and Install a Binary Module
@@ -119,7 +120,7 @@ and then uses it to install several modules:
       "type": "shell",
       "inline": [
         "gruntwork-install --module-name 'ecs-scripts' --repo 'https://github.com/gruntwork-io/module-ecs' --tag 'v0.0.1'",
-        "gruntwork-install --module-name 'vault-ssh-helper' --repo 'https://github.com/gruntwork-io/script-modules' --tag 'v0.0.3' --module-param 'install-dir=/opt/vault-ssh-helper' --module-param 'owner=ubuntu'",
+        "gruntwork-install --module-name 'fail2ban' --repo 'https://github.com/gruntwork-io/module-security' -module-param 'ban-time=3600'",
         "gruntwork-install --binary-name 'gruntkms' --repo 'https://github.com/gruntwork-io/gruntkms' --tag 'v0.0.1'"
       ],
       "environment_vars": ["GITHUB_OAUTH_TOKEN={{user `github_auth_token`}}"]
