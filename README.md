@@ -43,8 +43,9 @@ Once that environment variable is set, you can run `gruntwork-install` with the 
 
 Option                      | Required | Description
 --------------------------- | -------- | ------------
-`--repo`                    | Yes      | The GitHub repo to install from.
-`--tag`                     | Yes      | The version of the `--repo` to install from.<br>Follows the syntax described at [Tag Constraint Expressions](https://github.com/gruntwork-io/fetch#tag-constraint-expressions).
+`--repo`                    | XOR      | The GitHub repo to install from. Exactly one of `--repo` or `--path` is required.
+`--path`                    | XOR      | The local file path to install from. Exactly one of `--repo` or `--path` is required.
+`--tag`                     | XOR      | The version of the `--repo` to install from.<br>Follows the syntax described at [Tag Constraint Expressions](https://github.com/gruntwork-io/fetch#tag-constraint-expressions).
 `--module-name`             | XOR      | The name of a module to install.<br>Can be any folder within the `modules` directory of `--repo`.<br>You must specify exactly one of `--module-name` or `--binary-name`.
 `--binary-name`             | XOR      | The name of a binary to install.<br>Can be any file uploaded as a release asset in `--repo`.<br>You must specify exactly one of `--module-name` or `--binary-name`.
 `--binary-sha256-checksum`  | No       | The SHA256 checksum of the binary specified by `--binary-name`. Should be exactly 64 characters..
@@ -128,6 +129,16 @@ and then uses it to install several modules:
   ]
 }
 ```
+
+##### Example 5: Use `gruntwork-install` to install from a local file path
+
+This is handy for automated testing:
+
+```
+gruntwork-install --module-name 'mock-module' --path .
+```
+
+
 
 ## Motivation
 

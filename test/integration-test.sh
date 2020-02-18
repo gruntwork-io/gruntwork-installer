@@ -42,3 +42,13 @@ gruntwork-install --repo 'https://github.com/gruntwork-io/terragrunt' --binary-n
 
 echo "Checking that terragrunt installed correctly"
 terragrunt --help
+
+echo "Checking that we can install from local file paths"
+gruntwork-install --path "$SCRIPT_DIR/.." --module-name mock-module
+
+echo "Verifying the mock-module wrote the text file we were expecting"
+contents=$(cat /tmp/mock-module-hello-world.txt)
+if [[ "$contents" != "Hello, World" ]]; then
+  echo "ERROR: did not find expected contents for file written by mock-module. Contents were: $contents"
+  exit 1
+fi

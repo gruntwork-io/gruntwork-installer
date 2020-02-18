@@ -20,17 +20,21 @@ function print_usage {
   echo
   echo "Download a Gruntwork Script Module and install it."
   echo
-  echo "Required Arguments:"
+  echo "Required arguments to install from Git URL:"
   echo
   echo -e "  --repo\t\tThe repo to install from."
   echo -e "  --tag\t\t\tThe version of --repo to install. Follows the syntax described at https://github.com/gruntwork-io/fetch#tag-constraint-expressions."
   echo
+  echo "Required arguments to install from local file path:"
+  echo
+  echo -e "  --path\t\tThe local file path to install from."
+  echo
   echo "Specify exactly one of:"
   echo
-  echo -e "  --module-name\t\tThe name of a module to install. Can be any folder within the $MODULES_DIR directory of --repo."
-  echo -e "  --binary-name\t\tThe name of a binary to install. Can be any file uploaded as a release asset in --repo."
-  echo -e "  --binary-sha256-checksum\t\tThe SHA256 checksum of the binary specified by --binary-name. Should be exactly 64 characters."
-  echo -e "  --binary-sha512-checksum\t\tThe SHA512 checksum of the binary specified by --binary-name. Should be exactly 128 characters."
+  echo -e "  --module-name\t\t\tThe name of a module to install. Can be any folder within the $MODULES_DIR directory of --repo."
+  echo -e "  --binary-name\t\t\tThe name of a binary to install. Can be any file uploaded as a release asset in --repo."
+  echo -e "  --binary-sha256-checksum\tThe SHA256 checksum of the binary specified by --binary-name. Should be exactly 64 characters."
+  echo -e "  --binary-sha512-checksum\tThe SHA512 checksum of the binary specified by --binary-name. Should be exactly 128 characters."
   echo
   echo "Optional Arguments:"
   echo
@@ -246,6 +250,7 @@ function install_script_module {
   local binary_sha256_checksum=""
   local binary_sha512_checksum=""
   local repo=""
+  local path=""
   local download_dir="$DEFAULT_MODULES_DOWNLOAD_DIR"
   local module_params=()
 
@@ -281,6 +286,10 @@ function install_script_module {
         repo="$2"
         shift
         ;;
+      --path)
+        path="$2"
+        shift
+        ;;
       --module-param)
         local readonly param=$(convert_module_params_format "$2")
         module_params+=("$param")
@@ -304,12 +313,23 @@ function install_script_module {
     shift
   done
 
-  assert_not_empty "--repo" "$repo"
-  assert_is_installed fetch
+  if [[ (-n "$repo" && -n "$path") || (-z "$repo" && -z "$path") ]]; then
+    log_error "Exactly one of --repo or --path must be set."
+    exit 1
+  fi
 
-  if ! repo_is_public "$repo"; then
-    log_info "Repository is not public. GITHUB_OAUTH_TOKEN environment variable is required."
-    assert_env_var_not_empty "GITHUB_OAUTH_TOKEN"
+  if [[ -n "$repo" ]]; then
+    assert_is_installed fetch
+
+    if ! repo_is_public "$repo"; then
+      log_info "Repository is not public. GITHUB_OAUTH_TOKEN environment variable is required."
+      assert_env_var_not_empty "GITHUB_OAUTH_TOKEN"
+    fi
+  else
+    if [[ -n "$binary_name" ]]; then
+      log_error "Can only use --binary-name with --repo."
+      exit 1
+    fi
   fi
 
   if [[ ( -z "$module_name" && -z "$binary_name" ) || ( ! -z "$module_name" && ! -z "$binary_name" ) ]]; then
@@ -327,13 +347,16 @@ function install_script_module {
     exit 1
   fi
 
-  if [[ ! -z "$module_name" ]]; then
-    log_info "Installing from $module_name..."
+  if [[ -n "$path" ]]; then
+    log_info "Installing from $module_name in $path..."
+    run_module "/modules/$module_name" "$path" "${module_params[@]}"
+  elif [[ -n "$module_name" ]]; then
+    log_info "Installing from $module_name in $repo..."
     fetch_script_module "$module_name" "$tag" "$branch" "$download_dir" "$repo"
     validate_module "$module_name" "$download_dir" "$tag" "$branch" "$repo"
     run_module "$module_name" "$download_dir" "${module_params[@]}"
   else
-    log_info "Installing $binary_name..."
+    log_info "Installing $binary_name from $repo..."
     fetch_binary "$binary_name" "$tag" "$download_dir" "$repo" "$binary_sha256_checksum" "$binary_sha512_checksum"
   fi
 
