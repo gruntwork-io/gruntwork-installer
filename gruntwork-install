@@ -49,32 +49,32 @@ function print_usage {
 }
 
 function log {
-  local readonly level="$1"
-  local readonly message="$2"
-  local readonly timestamp=$(date +"%Y-%m-%d %H:%M:%S")
-  local readonly scriptname="$(basename "$0")"
+  local -r level="$1"
+  local -r message="$2"
+  local -r timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+  local -r scriptname="$(basename "$0")"
 
   >&2 echo -e "${timestamp} [${level}] [$scriptname] ${message}"
 }
 
 function log_info {
-  local readonly message="$1"
+  local -r message="$1"
   log "INFO" "$message"
 }
 
 function log_warn {
-  local readonly message="$1"
+  local -r message="$1"
   log "WARN" "$message"
 }
 
 function log_error {
-  local readonly message="$1"
+  local -r message="$1"
   log "ERROR" "$message"
 }
 
 # Assert that a given binary is installed on this box
 function assert_is_installed {
-  local readonly name="$1"
+  local -r name="$1"
 
   if [[ ! $(command -v ${name}) ]]; then
     log_error "The binary '$name' is required by this script but is not installed or in the system's PATH."
@@ -83,8 +83,8 @@ function assert_is_installed {
 }
 
 function assert_not_empty {
-  local readonly arg_name="$1"
-  local readonly arg_value="$2"
+  local -r arg_name="$1"
+  local -r arg_value="$2"
 
   if [[ -z "$arg_value" ]]; then
     log_error "The value for '$arg_name' cannot be empty"
@@ -94,8 +94,8 @@ function assert_not_empty {
 }
 
 function assert_env_var_not_empty {
-  local readonly var_name="$1"
-  local readonly var_value="${!var_name}"
+  local -r var_name="$1"
+  local -r var_value="${!var_name}"
 
   if [[ -z "$var_value" ]]; then
     log_error "Required environment variable $var_name not set."
@@ -105,11 +105,11 @@ function assert_env_var_not_empty {
 
 # Download the files of the given Script Module using fetch (https://github.com/gruntwork-io/fetch)
 function fetch_script_module {
-  local readonly module_name="$1"
-  local readonly tag="$2"
-  local readonly branch="$3"
-  local readonly download_dir="$4"
-  local readonly repo="$5"
+  local -r module_name="$1"
+  local -r tag="$2"
+  local -r branch="$3"
+  local -r download_dir="$4"
+  local -r repo="$5"
 
   # We want to make sure that all folders down to $download_path/$module_name exists, but that $download_path/$module_name itself is empty.
   mkdir -p "$download_dir/$module_name/"
@@ -123,18 +123,18 @@ function fetch_script_module {
 
 # Download a binary asset from a GitHub release using fetch (https://github.com/gruntwork-io/fetch)
 function fetch_binary {
-  local readonly binary_name="$1"
-  local readonly tag="$2"
-  local readonly download_dir="$3"
-  local readonly repo="$4"
-  local readonly sha256_checksum="$5"
-  local readonly sha512_checksum="$6"
+  local -r binary_name="$1"
+  local -r tag="$2"
+  local -r download_dir="$3"
+  local -r repo="$4"
+  local -r sha256_checksum="$5"
+  local -r sha512_checksum="$6"
 
   local binary_name_full=""
   binary_name_full=$(determine_binary_name "$binary_name")
 
-  local readonly full_download_path="$download_dir/$binary_name_full"
-  local readonly full_dest_path="$BIN_DIR/$binary_name"
+  local -r full_download_path="$download_dir/$binary_name_full"
+  local -r full_dest_path="$BIN_DIR/$binary_name"
 
   # We want to make sure that all folders down to $download_path exist, but that $download_path/$binary_name_full does not
   mkdir -p "$download_dir"
@@ -155,11 +155,11 @@ function fetch_binary {
 
 # Validate that at least one file was downloaded from the module; otherwise throw an error.
 function validate_module {
-  local readonly module_name="$1"
-  local readonly download_dir="$2"
-  local readonly tag="$3"
-  local readonly branch="$4"
-  local reaodnly repo="$5"
+  local -r module_name="$1"
+  local -r download_dir="$2"
+  local -r tag="$3"
+  local -r branch="$4"
+  local -r repo="$5"
 
   if [[ ! -e "$download_dir/$module_name" ]]; then
     log_error "No files were downloaded. Are you sure \"$module_name\" is a valid Script Module in $repo (tag = $tag, branch = $branch)?"
@@ -181,14 +181,14 @@ function get_os_arch {
 }
 
 function string_contains {
-  local readonly str="$1"
-  local readonly contains="$2"
+  local -r str="$1"
+  local -r contains="$2"
 
   [[ "$str" == *"$contains"* ]]
 }
 
 function get_os_arch_gox_format {
-  local readonly arch=$(get_os_arch)
+  local -r arch=$(get_os_arch)
 
   if $(string_contains "$arch" "64"); then
     echo "amd64"
@@ -202,18 +202,18 @@ function get_os_arch_gox_format {
 # We release binaries with the name following the format <NAME>_<OS>_<ARCH> (e.g. foo_linux_amd64). Given the NAME of
 # a binary, this function adds the proper OS and ARCH to it for the current OS.
 function determine_binary_name {
-  local readonly binary_name="$1"
-  local readonly os_name=$(get_os_name)
-  local readonly os_arch=$(get_os_arch_gox_format)
+  local -r binary_name="$1"
+  local -r os_name=$(get_os_name)
+  local -r os_arch=$(get_os_arch_gox_format)
   echo "${binary_name}_${os_name}_${os_arch}"
 }
 
 # Take in a key-value pair of the format key=value and convert it to the format that Gruntwork bash scripts expect:
 # --key value
 function convert_module_params_format {
-  local readonly key_value_pair="$1"
-  local readonly key="${key_value_pair%%=*}"
-  local readonly val="${key_value_pair#*=}"
+  local -r key_value_pair="$1"
+  local -r key="${key_value_pair%%=*}"
+  local -r val="${key_value_pair#*=}"
   echo "--${key} \"${val}\""
 }
 
@@ -221,17 +221,17 @@ function convert_module_params_format {
 # Check if the repo is anonymously accessible. This indicates that the repo is public, and will skip checks for the
 # token.
 function repo_is_public {
-  local readonly repo_url="$1"
+  local -r repo_url="$1"
 
   curl --silent --fail "$repo_url" > /dev/null
 }
 
 function run_module {
-  local readonly module_name="$1"
-  local readonly download_dir="$2"
+  local -r module_name="$1"
+  local -r download_dir="$2"
   shift 2
-  local readonly module_params=($@)
-  local readonly install_script_path="${download_dir}/${module_name}/${MODULE_INSTALL_FILE_NAME}"
+  local -ar module_params=($@)
+  local -r install_script_path="${download_dir}/${module_name}/${MODULE_INSTALL_FILE_NAME}"
 
   log_info "Executing $install_script_path ${module_params[@]}"
   chmod u+x "$install_script_path"
@@ -282,7 +282,7 @@ function install_script_module {
         shift
         ;;
       --module-param)
-        local readonly param=$(convert_module_params_format "$2")
+        local -r param=$(convert_module_params_format "$2")
         module_params+=("$param")
         shift
         ;;
