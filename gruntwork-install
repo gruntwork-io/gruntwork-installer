@@ -282,7 +282,7 @@ function install_script_module {
         shift
         ;;
       --module-param)
-        local -r param=$(convert_module_params_format "$2")
+        local param=$(convert_module_params_format "$2")
         module_params+=("$param")
         shift
         ;;
