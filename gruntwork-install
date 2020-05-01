@@ -50,26 +50,27 @@ function print_usage {
 
 function log {
   local -r level="$1"
-  local -r message="$2"
+  shift
+  local -ra message=("$@")
   local -r timestamp=$(date +"%Y-%m-%d %H:%M:%S")
   local -r scriptname="$(basename "$0")"
 
-  >&2 echo -e "${timestamp} [${level}] [$scriptname] ${message}"
+  >&2 echo -e "${timestamp} [${level}] [$scriptname] ${message[@]}"
 }
 
 function log_info {
-  local -r message="$1"
-  log "INFO" "$message"
+  local -ra message=("$@")
+  log "INFO" "${message[@]}"
 }
 
 function log_warn {
-  local -r message="$1"
-  log "WARN" "$message"
+  local -ra message=("$@")
+  log "WARN" "${message[@]}"
 }
 
 function log_error {
-  local -r message="$1"
-  log "ERROR" "$message"
+  local -ra message=("$@")
+  log "ERROR" "${message[@]}"
 }
 
 # Assert that a given binary is installed on this box
@@ -214,7 +215,8 @@ function convert_module_params_format {
   local -r key_value_pair="$1"
   local -r key="${key_value_pair%%=*}"
   local -r val="${key_value_pair#*=}"
-  echo "--${key} \"${val}\""
+  local -ra params=( "--${key}" "${val}")
+  printf '%s\n' "${params[@]}"
 }
 
 
@@ -230,12 +232,12 @@ function run_module {
   local -r module_name="$1"
   local -r download_dir="$2"
   shift 2
-  local -ra module_params=($@)
+  local -ra module_params=("$@")
   local -r install_script_path="${download_dir}/${module_name}/${MODULE_INSTALL_FILE_NAME}"
 
   log_info "Executing $install_script_path ${module_params[@]}"
   chmod u+x "$install_script_path"
-  eval "$install_script_path ${module_params[@]}"
+  "$install_script_path" "${module_params[@]}"
 }
 
 function install_script_module {
@@ -282,8 +284,9 @@ function install_script_module {
         shift
         ;;
       --module-param)
-        local -r param=$(convert_module_params_format "$2")
-        module_params+=("$param")
+        local -a param=()
+        mapfile -t param <<<"$(convert_module_params_format "$2")"
+        module_params+=("${param[@]}")
         shift
         ;;
       --download-dir)

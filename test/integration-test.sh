@@ -20,7 +20,10 @@ echo "Checking that the ecs-scripts installed correctly"
 configure-ecs-instance --help
 
 echo "Using gruntwork-install to install a module from the gruntwork-install repo and passing args to it via --module-param"
-gruntwork-install --module-name "dummy-module" --repo "https://github.com/gruntwork-io/gruntwork-installer" --tag "v0.0.17" --module-param "file-to-cat=$SCRIPT_DIR/integration-test.sh"
+gruntwork-install --module-name "dummy-module" --repo "https://github.com/gruntwork-io/gruntwork-installer" --tag "v0.0.25" --module-param "file-to-cat=$SCRIPT_DIR/integration-test.sh"
+
+echo "Using gruntwork-install to install a test module from the gruntwork-install repo and test that it's args are maintained via --module-param"
+gruntwork-install --module-name "args-test" --repo "https://github.com/gruntwork-io/gruntwork-installer" --tag "v0.0.25" --module-param 'test-args=1 2 3 *'
 
 echo "Using gruntwork-install to install a binary from the gruntkms repo"
 gruntwork-install --binary-name "gruntkms" --repo "https://github.com/gruntwork-io/gruntkms" --tag "v0.0.1"
