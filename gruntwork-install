@@ -209,21 +209,6 @@ function determine_binary_name {
   echo "${binary_name}_${os_name}_${os_arch}"
 }
 
-# Take in a key-value pair of the format key=value and convert it to the format that Gruntwork bash scripts expect:
-# --key value
-function convert_module_params_format {
-  local -r key_value_pair="$1"
-  local -r key="${key_value_pair%%=*}"
-  local -r val="${key_value_pair#*=}"
-  local -ra params=( "--${key}" "${val}")
-  
-  # Print the value out as something that can be evaled back into an array
-  # Note: this prints something like '([0]="key_name" [1]="value1 value2 value3")'
-  local -r ret="$(declare -p params)"
-  echo "${ret#*=}"
-}
-
-
 # Check if the repo is anonymously accessible. This indicates that the repo is public, and will skip checks for the
 # token.
 function repo_is_public {
@@ -288,9 +273,9 @@ function install_script_module {
         shift
         ;;
       --module-param)
-        local -a param=()
-        eval "local -a param=$(convert_module_params_format "$2")"
-        module_params+=("${param[@]}")
+        local module_param_key="${2%%=*}"
+        local module_param_val="${2#*=}"
+        module_params+=( "--$module_param_key" "$module_param_val" )
         shift
         ;;
       --download-dir)
