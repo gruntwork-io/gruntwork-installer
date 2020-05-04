@@ -53,18 +53,18 @@ function print_usage {
 
 # http://stackoverflow.com/questions/592620/check-if-a-program-exists-from-a-bash-script
 function command_exists {
-  local readonly cmd="$1"
+  local -r cmd="$1"
   type "$cmd" > /dev/null 2>&1
 }
 
 function download_url_to_file {
-  local readonly url="$1"
-  local readonly file="$2"
-  local readonly tmp_path=$(mktemp "/tmp/gruntwork-bootstrap-download-XXXXXX")
+  local -r url="$1"
+  local -r file="$2"
+  local -r tmp_path=$(mktemp "/tmp/gruntwork-bootstrap-download-XXXXXX")
 
   echo "Downloading $url to $tmp_path"
   if $(command_exists "curl"); then
-    local readonly status_code=$(curl -L -s -w '%{http_code}' -o "$tmp_path" "$url")
+    local -r status_code=$(curl -L -s -w '%{http_code}' -o "$tmp_path" "$url")
     assert_successful_status_code "$status_code" "$url"
 
     echo "Moving $tmp_path to $file"
@@ -76,8 +76,8 @@ function download_url_to_file {
 }
 
 function assert_successful_status_code {
-  local readonly status_code="$1"
-  local readonly url="$2"
+  local -r status_code="$1"
+  local -r url="$2"
 
   if [[ "$status_code" == "200" ]]; then
     echo "Got expected status code 200"
@@ -90,15 +90,15 @@ function assert_successful_status_code {
 }
 
 function string_starts_with {
-  local readonly str="$1"
-  local readonly prefix="$2"
+  local -r str="$1"
+  local -r prefix="$2"
 
   [[ "$str" == "$prefix"* ]]
 }
 
 function string_contains {
-  local readonly str="$1"
-  local readonly contains="$2"
+  local -r str="$1"
+  local -r contains="$2"
 
   [[ "$str" == *"$contains"* ]]
 }
@@ -117,7 +117,7 @@ function get_os_arch {
 }
 
 function get_os_arch_gox_format {
-  local readonly arch=$(get_os_arch)
+  local -r arch=$(get_os_arch)
 
   if $(string_contains "$arch" "64"); then
     echo "amd64"
@@ -131,19 +131,19 @@ function get_os_arch_gox_format {
 }
 
 function download_and_install {
-  local readonly url="$1"
-  local readonly install_path="$2"
+  local -r url="$1"
+  local -r install_path="$2"
 
   download_url_to_file "$url" "$install_path"
   sudo chmod 0755 "$install_path"
 }
 
 function install_fetch {
-  local readonly install_path="$1"
-  local readonly version="$2"
+  local -r install_path="$1"
+  local -r version="$2"
 
-  local readonly os=$(get_os_name)
-  local readonly os_arch=$(get_os_arch_gox_format)
+  local -r os=$(get_os_name)
+  local -r os_arch=$(get_os_arch_gox_format)
 
   if [[ -z "$os_arch" ]]; then
     echo "ERROR: Unrecognized OS architecture: $(get_os_arch)"
@@ -151,22 +151,22 @@ function install_fetch {
   fi
 
   echo "Installing fetch version $version to $install_path"
-  local readonly url="${FETCH_DOWNLOAD_URL_BASE}/${version}/fetch_${os}_${os_arch}"
+  local -r url="${FETCH_DOWNLOAD_URL_BASE}/${version}/fetch_${os}_${os_arch}"
   download_and_install "$url" "$install_path"
 }
 
 function install_gruntwork_installer {
-  local readonly install_path="$1"
-  local readonly version="$2"
-  local readonly download_url="$3"
+  local -r install_path="$1"
+  local -r version="$2"
+  local -r download_url="$3"
 
   echo "Installing $GRUNTWORK_INSTALLER_SCRIPT_NAME version $version to $install_path"
   download_and_install "$download_url" "$install_path"
 }
 
 function assert_not_empty {
-  local readonly arg_name="$1"
-  local readonly arg_value="$2"
+  local -r arg_name="$1"
+  local -r arg_value="$2"
 
   if [[ -z "$arg_value" ]]; then
     echo "ERROR: The value for '$arg_name' cannot be empty"
@@ -176,9 +176,9 @@ function assert_not_empty {
 }
 
 function create_user_data_folder {
-  local readonly user_data_folder="$1"
-  local readonly user_data_folder_owner="$2"
-  local readonly user_data_folder_readme="$user_data_folder/README.txt"
+  local -r user_data_folder="$1"
+  local -r user_data_folder_owner="$2"
+  local -r user_data_folder_readme="$user_data_folder/README.txt"
 
   echo "Creating $user_data_folder as a place to store scripts intended to be run in the User Data of an EC2 instance during boot"
   sudo mkdir -p "$user_data_folder"

@@ -5,8 +5,8 @@
 set -e
 
 function assert_not_empty {
-  local readonly arg_name="$1"
-  local readonly arg_value="$2"
+  local -r arg_name="$1"
+  local -r arg_value="$2"
 
   if [[ -z "$arg_value" ]]; then
     echo "ERROR: The value for '$arg_name' cannot be empty"

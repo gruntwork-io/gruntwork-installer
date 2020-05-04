@@ -24,18 +24,18 @@ set -e
 readonly DEFAULT_PACKER_FILES_PATH="/tmp/packer-files"
 
 function copy_packer_files {
-  local readonly file_upload_paths=("$DEFAULT_PACKER_FILES_PATH")
-  local readonly script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local -ra file_upload_paths=("$DEFAULT_PACKER_FILES_PATH")
+  local -r script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
   # For each file upload path, if there are any files there, relocate the files to their proper directories
   for upload_path in "${file_upload_paths[@]}"; do
       if [[ -e "$upload_path" ]]; then
           # Get the length of the string that $upload_path resolves to
-          local readonly upload_path_length=${#upload_path}
+          local -r upload_path_length=${#upload_path}
           local file=""
 
           for file in $(find "$upload_path" -type f); do
-              local readonly absolute_filename="${file:$upload_path_length}";
+              local -r absolute_filename="${file:$upload_path_length}";
               echo "The packer-file-copy module is copying $file to $absolute_filename"
               sudo mkdir -p $(dirname "$absolute_filename");
               sudo mv "$file" "$absolute_filename";
