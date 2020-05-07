@@ -37,7 +37,7 @@ gruntwork-install \
   --repo "https://github.com/gruntwork-io/gruntkms" \
   --tag "v0.0.1" \
   --binary-install-dir "$HOME" \
-  --no-sudo
+  --no-sudo "true"
 
 echo "Checking that gruntkms installed correctly into home dir"
 "$HOME/gruntkms" --help
