@@ -31,17 +31,6 @@ gruntwork-install --binary-name "gruntkms" --repo "https://github.com/gruntwork-
 echo "Checking that gruntkms installed correctly"
 gruntkms --help
 
-echo "Using gruntwork-install to install a binary from the gruntkms repo into a different folder without using sudo"
-gruntwork-install \
-  --binary-name "gruntkms" \
-  --repo "https://github.com/gruntwork-io/gruntkms" \
-  --tag "v0.0.1" \
-  --binary-install-dir "$HOME" \
-  --no-sudo "true"
-
-echo "Checking that gruntkms installed correctly into home dir"
-"$HOME/gruntkms" --help
-
 echo "Unsetting GITHUB_OAUTH_TOKEN to test installing from public repo (terragrunt)"
 unset GITHUB_OAUTH_TOKEN
 
