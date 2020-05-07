@@ -63,7 +63,7 @@ function download_url_to_file {
   local -r tmp_path=$(mktemp "/tmp/gruntwork-bootstrap-download-XXXXXX")
 
   echo "Downloading $url to $tmp_path"
-  if $(command_exists "curl"); then
+  if command_exists "curl"; then
     local -r status_code=$(curl -L -s -w '%{http_code}' -o "$tmp_path" "$url")
     assert_successful_status_code "$status_code" "$url"
 
@@ -81,7 +81,7 @@ function assert_successful_status_code {
 
   if [[ "$status_code" == "200" ]]; then
     echo "Got expected status code 200"
-  elif $(string_starts_with "$url" "file://") && [[ "$status_code" == "000" ]]; then
+  elif string_starts_with "$url" "file://" && [[ "$status_code" == "000" ]]; then
     echo "Got expected status code 000 for local file URL"
   else
     echo "ERROR: Expected status code 200 but got $status_code when downloading $url"
@@ -119,13 +119,13 @@ function get_os_arch {
 function get_os_arch_gox_format {
   local -r arch=$(get_os_arch)
 
-  if $(string_contains "$arch" "64"); then
+  if string_contains "$arch" "64"; then
     echo "amd64"
-  elif $(string_contains "$arch" "386"); then
+  elif string_contains "$arch" "386"; then
     echo "386"
-  elif $(string_contains "$arch" "686"); then
+  elif string_contains "$arch" "686"; then
     echo "386" # Not a typo; 686 is also 32-bit and should work with 386 binaries
-  elif $(string_contains "$arch" "arm"); then
+  elif string_contains "$arch" "arm"; then
     echo "arm"
   fi
 }
@@ -199,10 +199,11 @@ EOF
 function bootstrap {
   local fetch_version="$DEFAULT_FETCH_VERSION"
   local installer_version=""
-  local user_data_folder_owner=$(id -u -n)
   local download_url=""
+  local user_data_folder_owner
+  user_data_folder_owner="$(id -u -n)"
 
-  while [[ $# > 0 ]]; do
+  while [[ $# -gt 0 ]]; do
     local key="$1"
 
     case "$key" in
