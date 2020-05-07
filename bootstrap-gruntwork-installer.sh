@@ -62,6 +62,7 @@ function download_url_to_file {
   local -r url="$1"
   local -r file="$2"
   local -r tmp_path=$(mktemp "/tmp/gruntwork-bootstrap-download-XXXXXX")
+  local -r no_sudo="$3"
 
   echo "Downloading $url to $tmp_path"
   if command_exists "curl"; then
@@ -69,7 +70,11 @@ function download_url_to_file {
     assert_successful_status_code "$status_code" "$url"
 
     echo "Moving $tmp_path to $file"
-    sudo mv -f "$tmp_path" "$file"
+    if [[ "$no_sudo" == "true" ]]; then
+      mv -f "$tmp_path" "$file"
+    else
+      sudo mv -f "$tmp_path" "$file"
+    fi
   else
     echo "ERROR: curl is not installed. Cannot download $url."
     exit 1
@@ -136,7 +141,7 @@ function download_and_install {
   local -r install_path="$2"
   local -r no_sudo="$3"
 
-  download_url_to_file "$url" "$install_path"
+  download_url_to_file "$url" "$install_path" "$no_sudo"
 
   if [[ "$no_sudo" == "true" ]]; then
     chmod 0755 "$install_path"
