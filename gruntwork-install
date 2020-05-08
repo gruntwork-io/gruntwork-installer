@@ -55,7 +55,7 @@ function log {
   local -r timestamp=$(date +"%Y-%m-%d %H:%M:%S")
   local -r scriptname="$(basename "$0")"
 
-  >&2 echo -e "${timestamp} [${level}] [$scriptname] ${message[@]}"
+  >&2 echo -e "${timestamp} [${level}] [$scriptname] ${message[*]}"
 }
 
 function log_info {
@@ -77,7 +77,7 @@ function log_error {
 function assert_is_installed {
   local -r name="$1"
 
-  if [[ ! $(command -v ${name}) ]]; then
+  if [[ ! "$(command -v "${name}")" ]]; then
     log_error "The binary '$name' is required by this script but is not installed or in the system's PATH."
     exit 1
   fi
@@ -114,7 +114,7 @@ function fetch_script_module {
 
   # We want to make sure that all folders down to $download_path/$module_name exists, but that $download_path/$module_name itself is empty.
   mkdir -p "$download_dir/$module_name/"
-  rm -Rf "$download_dir/$module_name/"
+  rm -Rf "${download_dir:?}/${module_name:?}/"
 
   # Note that fetch can safely handle blank arguments for --tag or --branch
   # If both --tag and --branch are specified, --branch will be used
@@ -141,9 +141,9 @@ function fetch_binary {
   mkdir -p "$download_dir"
   rm -f "$download_dir/$binary_name_full"
 
-  if [[ ! -z "$sha256_checksum" ]]; then
+  if [[ -n "$sha256_checksum" ]]; then
     fetch --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir" --release-asset-checksum-algo "sha256" --release-asset-checksum "$sha256_checksum"
-   elif [[ ! -z "$sha512_checksum" ]]; then
+   elif [[ -n "$sha512_checksum" ]]; then
     fetch --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir" --release-asset-checksum-algo "sha512" --release-asset-checksum "$sha512_checksum"
   else
     fetch --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir"
@@ -160,7 +160,7 @@ function validate_module {
   local -r download_dir="$2"
   local -r tag="$3"
   local -r branch="$4"
-  local reaodnly repo="$5"
+  local -r repo="$5"
 
   if [[ ! -e "$download_dir/$module_name" ]]; then
     log_error "No files were downloaded. Are you sure \"$module_name\" is a valid Script Module in $repo (tag = $tag, branch = $branch)?"
@@ -191,11 +191,11 @@ function string_contains {
 function get_os_arch_gox_format {
   local -r arch=$(get_os_arch)
 
-  if $(string_contains "$arch" "64"); then
+  if string_contains "$arch" "64"; then
     echo "amd64"
-  elif $(string_contains "$arch" "386"); then
+  elif string_contains "$arch" "386"; then
     echo "386"
-  elif $(string_contains "$arch" "arm"); then
+  elif string_contains "$arch" "arm"; then
     echo "arm"
   fi
 }
@@ -224,7 +224,7 @@ function run_module {
   local -ra module_params=("$@")
   local -r install_script_path="${download_dir}/${module_name}/${MODULE_INSTALL_FILE_NAME}"
 
-  log_info "Executing $install_script_path ${module_params[@]}"
+  log_info "Executing $install_script_path ${module_params[*]}"
   chmod u+x "$install_script_path"
   "$install_script_path" "${module_params[@]}"
 }
@@ -240,7 +240,7 @@ function install_script_module {
   local download_dir="$DEFAULT_MODULES_DOWNLOAD_DIR"
   local module_params=()
 
-  while [[ $# > 0 ]]; do
+  while [[ $# -gt 0 ]]; do
     local key="$1"
 
     case "$key" in
@@ -304,22 +304,22 @@ function install_script_module {
     assert_env_var_not_empty "GITHUB_OAUTH_TOKEN"
   fi
 
-  if [[ ( -z "$module_name" && -z "$binary_name" ) || ( ! -z "$module_name" && ! -z "$binary_name" ) ]]; then
+  if [[ ( -z "$module_name" && -z "$binary_name" ) || ( -n "$module_name" && -n "$binary_name" ) ]]; then
     log_error "You must specify exactly one of --module-name or --binary-name."
     exit 1
   fi
 
-  if [[ ! -z "$binary_name" && -z "$tag" ]]; then
+  if [[ -n "$binary_name" && -z "$tag" ]]; then
     log_error "--binary-name can only be used if you specify a release via --tag."
     exit 1
   fi
 
-  if [[ ! -z "$binary_sha256_checksum" && ! -z "$binary_sha512_checksum" ]]; then
+  if [[ -n "$binary_sha256_checksum" && -n "$binary_sha512_checksum" ]]; then
     log_error "You must specify at most one of --binary-sha256-checksum and --binary-sha512-checksum"
     exit 1
   fi
 
-  if [[ ! -z "$module_name" ]]; then
+  if [[ -n "$module_name" ]]; then
     log_info "Installing from $module_name..."
     fetch_script_module "$module_name" "$tag" "$branch" "$download_dir" "$repo"
     validate_module "$module_name" "$download_dir" "$tag" "$branch" "$repo"
