@@ -75,6 +75,17 @@ function log_error {
   log "ERROR" "${message[@]}"
 }
 
+function maybe_sudo {
+  local -r no_sudo="$1"
+  shift
+
+  if [[ "$no_sudo" == "true" ]]; then
+    "$@"
+  else
+    sudo "$@"
+  fi
+}
+
 # Assert that a given binary is installed on this box
 function assert_is_installed {
   local -r name="$1"
@@ -154,13 +165,8 @@ function fetch_binary {
   fi
 
   log_info "Moving $full_download_path to $full_dest_path and setting execute permissions"
-  if [[ "$no_sudo" == "true" ]]; then
-    mv "$full_download_path" "$full_dest_path"
-    chmod u+x "$full_dest_path"
-  else
-    sudo mv "$full_download_path" "$full_dest_path"
-    sudo chmod u+x "$full_dest_path"
-  fi
+  maybe_sudo "$no_sudo" mv "$full_download_path" "$full_dest_path"
+  maybe_sudo "$no_sudo" chmod u+x "$full_dest_path"
 }
 
 # Validate that at least one file was downloaded from the module; otherwise throw an error.

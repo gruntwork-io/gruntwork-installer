@@ -52,6 +52,17 @@ function print_usage {
   echo "    curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version 0.0.3"
 }
 
+function maybe_sudo {
+  local -r no_sudo="$1"
+  shift
+
+  if [[ "$no_sudo" == "true" ]]; then
+    "$@"
+  else
+    sudo "$@"
+  fi
+}
+
 # http://stackoverflow.com/questions/592620/check-if-a-program-exists-from-a-bash-script
 function command_exists {
   local -r cmd="$1"
@@ -70,11 +81,7 @@ function download_url_to_file {
     assert_successful_status_code "$status_code" "$url"
 
     echo "Moving $tmp_path to $file"
-    if [[ "$no_sudo" == "true" ]]; then
-      mv -f "$tmp_path" "$file"
-    else
-      sudo mv -f "$tmp_path" "$file"
-    fi
+    maybe_sudo "$no_sudo" mv -f "$tmp_path" "$file"
   else
     echo "ERROR: curl is not installed. Cannot download $url."
     exit 1
@@ -142,12 +149,7 @@ function download_and_install {
   local -r no_sudo="$3"
 
   download_url_to_file "$url" "$install_path" "$no_sudo"
-
-  if [[ "$no_sudo" == "true" ]]; then
-    chmod 0755 "$install_path"
-  else
-    sudo chmod 0755 "$install_path"
-  fi
+  maybe_sudo "$no_sudo" chmod 0755 "$install_path"
 }
 
 function install_fetch {
@@ -196,7 +198,9 @@ function create_user_data_folder {
   local -r no_sudo="$3"
 
   echo "Creating $user_data_folder as a place to store scripts intended to be run in the User Data of an EC2 instance during boot"
-tee /tmp/gruntwork_installer_user_data_folder_readme.txt > /dev/null <<EOF
+  maybe_sudo "$no_sudo" mkdir -p "$user_data_folder"
+
+maybe_sudo "$no_sudo" tee "$user_data_folder_readme" > /dev/null <<EOF
 The /etc/user-data folder contains scripts that should be executed while an EC2 instance is booting as part of its
 User Data (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) configuration.
 
@@ -206,16 +210,7 @@ only to be installed, but also to execute while a server is booting, and instead
 all over the file system, /etc/user-data gives us a single, common place to put them all.
 EOF
 
-
-  if [[ "$no_sudo" == "true" ]]; then
-    mkdir -p "$user_data_folder"
-    mv /tmp/gruntwork_installer_user_data_folder_readme.txt "$user_data_folder_readme"
-    chown -R "$user_data_folder_owner" "$user_data_folder"
-  else
-    sudo mkdir -p "$user_data_folder"
-    sudo mv /tmp/gruntwork_installer_user_data_folder_readme.txt "$user_data_folder_readme"
-    sudo chown -R "$user_data_folder_owner" "$user_data_folder"
-  fi
+  maybe_sudo "$no_sudo" chown -R "$user_data_folder_owner" "$user_data_folder"
 }
 
 function bootstrap {
