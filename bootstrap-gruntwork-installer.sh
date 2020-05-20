@@ -41,6 +41,7 @@ function print_usage {
   echo -e "  --fetch-version\tOptional. The version of fetch to install. Default: $DEFAULT_FETCH_VERSION."
   echo -e "  --user-data-owner\tOptional. The user who shown own the $USER_DATA_DIR folder. Default: (current user)."
   echo -e "  --download-url\tOptional. The URL from where to download $GRUNTWORK_INSTALLER_SCRIPT_NAME. Mostly used for automated tests. Default: $GRUNTWORK_INSTALLER_DOWNLOAD_URL_BASE/(version)/$GRUNTWORK_INSTALLER_SCRIPT_NAME."
+  echo -e "  --no-sudo\tOptional. When true, don't use sudo to install binaries. Default: false"
   echo
   echo "Examples:"
   echo
@@ -49,6 +50,17 @@ function print_usage {
   echo
   echo "  One-liner to download this bootstrap script from GitHub and run it to install version 0.0.3:"
   echo "    curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version 0.0.3"
+}
+
+function maybe_sudo {
+  local -r no_sudo="$1"
+  shift
+
+  if [[ "$no_sudo" == "true" ]]; then
+    "$@"
+  else
+    sudo "$@"
+  fi
 }
 
 # http://stackoverflow.com/questions/592620/check-if-a-program-exists-from-a-bash-script
@@ -61,6 +73,7 @@ function download_url_to_file {
   local -r url="$1"
   local -r file="$2"
   local -r tmp_path=$(mktemp "/tmp/gruntwork-bootstrap-download-XXXXXX")
+  local -r no_sudo="$3"
 
   echo "Downloading $url to $tmp_path"
   if command_exists "curl"; then
@@ -68,7 +81,7 @@ function download_url_to_file {
     assert_successful_status_code "$status_code" "$url"
 
     echo "Moving $tmp_path to $file"
-    sudo mv -f "$tmp_path" "$file"
+    maybe_sudo "$no_sudo" mv -f "$tmp_path" "$file"
   else
     echo "ERROR: curl is not installed. Cannot download $url."
     exit 1
@@ -133,14 +146,16 @@ function get_os_arch_gox_format {
 function download_and_install {
   local -r url="$1"
   local -r install_path="$2"
+  local -r no_sudo="$3"
 
-  download_url_to_file "$url" "$install_path"
-  sudo chmod 0755 "$install_path"
+  download_url_to_file "$url" "$install_path" "$no_sudo"
+  maybe_sudo "$no_sudo" chmod 0755 "$install_path"
 }
 
 function install_fetch {
   local -r install_path="$1"
   local -r version="$2"
+  local -r no_sudo="$3"
 
   local -r os=$(get_os_name)
   local -r os_arch=$(get_os_arch_gox_format)
@@ -152,16 +167,17 @@ function install_fetch {
 
   echo "Installing fetch version $version to $install_path"
   local -r url="${FETCH_DOWNLOAD_URL_BASE}/${version}/fetch_${os}_${os_arch}"
-  download_and_install "$url" "$install_path"
+  download_and_install "$url" "$install_path" "$no_sudo"
 }
 
 function install_gruntwork_installer {
   local -r install_path="$1"
   local -r version="$2"
   local -r download_url="$3"
+  local -r no_sudo="$4"
 
   echo "Installing $GRUNTWORK_INSTALLER_SCRIPT_NAME version $version to $install_path"
-  download_and_install "$download_url" "$install_path"
+  download_and_install "$download_url" "$install_path" "$no_sudo"
 }
 
 function assert_not_empty {
@@ -179,11 +195,12 @@ function create_user_data_folder {
   local -r user_data_folder="$1"
   local -r user_data_folder_owner="$2"
   local -r user_data_folder_readme="$user_data_folder/README.txt"
+  local -r no_sudo="$3"
 
   echo "Creating $user_data_folder as a place to store scripts intended to be run in the User Data of an EC2 instance during boot"
-  sudo mkdir -p "$user_data_folder"
+  maybe_sudo "$no_sudo" mkdir -p "$user_data_folder"
 
-sudo tee "$user_data_folder_readme" > /dev/null <<EOF
+maybe_sudo "$no_sudo" tee "$user_data_folder_readme" > /dev/null <<EOF
 The /etc/user-data folder contains scripts that should be executed while an EC2 instance is booting as part of its
 User Data (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) configuration.
 
@@ -193,7 +210,7 @@ only to be installed, but also to execute while a server is booting, and instead
 all over the file system, /etc/user-data gives us a single, common place to put them all.
 EOF
 
-  sudo chown -R "$user_data_folder_owner" "$user_data_folder"
+  maybe_sudo "$no_sudo" chown -R "$user_data_folder_owner" "$user_data_folder"
 }
 
 function bootstrap {
@@ -202,6 +219,7 @@ function bootstrap {
   local download_url=""
   local user_data_folder_owner
   user_data_folder_owner="$(id -u -n)"
+  local no_sudo="false"
 
   while [[ $# -gt 0 ]]; do
     local key="$1"
@@ -221,6 +239,10 @@ function bootstrap {
         ;;
       --download-url)
         download_url="$2"
+        shift
+        ;;
+      --no-sudo)
+        no_sudo="$2"
         shift
         ;;
       --help)
@@ -246,9 +268,9 @@ function bootstrap {
   fi
 
   echo "Installing $GRUNTWORK_INSTALLER_SCRIPT_NAME..."
-  install_fetch "$FETCH_INSTALL_PATH" "$fetch_version"
-  install_gruntwork_installer "$GRUNTWORK_INSTALLER_INSTALL_PATH" "$installer_version" "$download_url"
-  create_user_data_folder "$USER_DATA_DIR" "$user_data_folder_owner"
+  install_fetch "$FETCH_INSTALL_PATH" "$fetch_version" "$no_sudo"
+  install_gruntwork_installer "$GRUNTWORK_INSTALLER_INSTALL_PATH" "$installer_version" "$download_url" "$no_sudo"
+  create_user_data_folder "$USER_DATA_DIR" "$user_data_folder_owner" "$no_sudo"
   echo "Success!"
 }
 

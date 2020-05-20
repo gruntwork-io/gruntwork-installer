@@ -12,7 +12,7 @@ readonly MODULES_DIR="modules"
 readonly MODULE_INSTALL_FILE_NAME="install.sh"
 
 readonly DEFAULT_MODULES_DOWNLOAD_DIR="/tmp/gruntwork-script-modules"
-readonly BIN_DIR="/usr/local/bin"
+readonly DEFAULT_BIN_DIR="/usr/local/bin"
 
 function print_usage {
   echo
@@ -36,6 +36,8 @@ function print_usage {
   echo
   echo -e "  --module-param\tA key-value pair of the format key=value you wish to pass to the module as a parameter. May be used multiple times."
   echo -e "  --download-dir\tThe directory to which the module will be downloaded and from which it will be installed. Default: $DEFAULT_MODULES_DOWNLOAD_DIR"
+  echo -e "  --binary-install-dir\tThe directory to which the binary will be installed. Only applies to binaries (not modules). Default: $DEFAULT_BIN_DIR"
+  echo -e "  --no-sudo\t\tWhen true, don't use sudo to install the binary into the install directory. Only applies to binaries (not modules). Default: false"
   echo -e "  --branch\t\tDownload the latest commit from this branch in --repo. This is an alternative to --tag, used only for testing."
   echo -e "  --help\t\tShow this help text and exit."
 
@@ -71,6 +73,17 @@ function log_warn {
 function log_error {
   local -ra message=("$@")
   log "ERROR" "${message[@]}"
+}
+
+function maybe_sudo {
+  local -r no_sudo="$1"
+  shift
+
+  if [[ "$no_sudo" == "true" ]]; then
+    "$@"
+  else
+    sudo "$@"
+  fi
 }
 
 # Assert that a given binary is installed on this box
@@ -130,12 +143,14 @@ function fetch_binary {
   local -r repo="$4"
   local -r sha256_checksum="$5"
   local -r sha512_checksum="$6"
+  local -r binary_install_dir="$7"
+  local -r no_sudo="$8"
 
   local binary_name_full=""
   binary_name_full=$(determine_binary_name "$binary_name")
 
   local -r full_download_path="$download_dir/$binary_name_full"
-  local -r full_dest_path="$BIN_DIR/$binary_name"
+  local -r full_dest_path="$binary_install_dir/$binary_name"
 
   # We want to make sure that all folders down to $download_path exist, but that $download_path/$binary_name_full does not
   mkdir -p "$download_dir"
@@ -150,8 +165,8 @@ function fetch_binary {
   fi
 
   log_info "Moving $full_download_path to $full_dest_path and setting execute permissions"
-  sudo mv "$full_download_path" "$full_dest_path"
-  sudo chmod u+x "$full_dest_path"
+  maybe_sudo "$no_sudo" mv "$full_download_path" "$full_dest_path"
+  maybe_sudo "$no_sudo" chmod u+x "$full_dest_path"
 }
 
 # Validate that at least one file was downloaded from the module; otherwise throw an error.
@@ -236,9 +251,11 @@ function install_script_module {
   local binary_name=""
   local binary_sha256_checksum=""
   local binary_sha512_checksum=""
+  local binary_install_dir="$DEFAULT_BIN_DIR"
   local repo=""
   local download_dir="$DEFAULT_MODULES_DOWNLOAD_DIR"
   local module_params=()
+  local no_sudo="false"
 
   while [[ $# -gt 0 ]]; do
     local key="$1"
@@ -280,6 +297,14 @@ function install_script_module {
         ;;
       --download-dir)
         download_dir="$2"
+        shift
+        ;;
+      --binary-install-dir)
+        binary_install_dir="$2"
+        shift
+        ;;
+      --no-sudo)
+        no_sudo="$2"
         shift
         ;;
       --help)
@@ -326,7 +351,7 @@ function install_script_module {
     run_module "$module_name" "$download_dir" "${module_params[@]}"
   else
     log_info "Installing $binary_name..."
-    fetch_binary "$binary_name" "$tag" "$download_dir" "$repo" "$binary_sha256_checksum" "$binary_sha512_checksum"
+    fetch_binary "$binary_name" "$tag" "$download_dir" "$repo" "$binary_sha256_checksum" "$binary_sha512_checksum" "$binary_install_dir" "$no_sudo"
   fi
 
   log_info "Success!"
