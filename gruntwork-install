@@ -236,12 +236,16 @@ function run_module {
   local -r module_name="$1"
   local -r download_dir="$2"
   local -r tag="$3"
-  shift 3
+  local -r branch="$4"
+  shift 4
   local -ra module_params=("$@")
   local -r install_script_path="${download_dir}/${module_name}/${MODULE_INSTALL_FILE_NAME}"
 
   log_info "Setting GRUNTWORK_INSTALL_TAG to $tag"
   export GRUNTWORK_INSTALL_TAG="$tag"
+
+  log_info "Setting GRUNTWORK_INSTALL_BRANCH to $branch"
+  export GRUNTWORK_INSTALL_BRANCH="$branch"
 
   log_info "Executing $install_script_path ${module_params[*]}"
   chmod u+x "$install_script_path"
@@ -352,7 +356,7 @@ function install_script_module {
     log_info "Installing from $module_name..."
     fetch_script_module "$module_name" "$tag" "$branch" "$download_dir" "$repo"
     validate_module "$module_name" "$download_dir" "$tag" "$branch" "$repo"
-    run_module "$module_name" "$download_dir" "$tag" "${module_params[@]}"
+    run_module "$module_name" "$download_dir" "$tag" "$branch" "${module_params[@]}"
   else
     log_info "Installing $binary_name..."
     fetch_binary "$binary_name" "$tag" "$download_dir" "$repo" "$binary_sha256_checksum" "$binary_sha512_checksum" "$binary_install_dir" "$no_sudo"
