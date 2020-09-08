@@ -51,7 +51,7 @@ Option                      | Required | Description
 `--binary-sha512-checksum`  | No       | The SHA512 checksum of the binary specified by `--binary-name`. Should be exactly 128 characters..
 `--module-param`            | No       | A key-value pair of the format `key=value` you wish to pass to the module as a parameter. May be used multiple times. <br>Note: a `--` will automatically be appended to the `key` when your module is invoked<br>See the documentation for each module to find out what parameters it accepts.
 `--download-dir`            | No       | The directory to which the module will be downloaded and from which it will be installed.
-`--branch      `            | No       | Download the latest commit from this branch in --repo. This is an alternative to --tag,<br>and is used only for testing.
+`--branch      `            | No       | Download the latest commit from this branch in --repo. This is an alternative to --tag,<br>and is used only for testing. This value is exposed to module install scripts as GRUNTWORK_INSTALL_BRANCH.
 `--help`                    | No       | Show the help text and exit.
 
 #### Examples
