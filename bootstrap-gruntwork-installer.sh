@@ -29,6 +29,9 @@ readonly GRUNTWORK_INSTALLER_DOWNLOAD_URL_BASE="https://raw.githubusercontent.co
 readonly GRUNTWORK_INSTALLER_INSTALL_PATH="$BIN_DIR/gruntwork-install"
 readonly GRUNTWORK_INSTALLER_SCRIPT_NAME="gruntwork-install"
 
+readonly DEFAULT_CURL_RETRY_NUMBER=0
+readonly ENABLED_CURL_RETRY_NUMBER=10
+
 function print_usage {
   echo
   echo "Usage: bootstrap-gruntwork-installer.sh [OPTIONS]"
@@ -42,6 +45,7 @@ function print_usage {
   echo -e "  --user-data-owner\tOptional. The user who shown own the $USER_DATA_DIR folder. Default: (current user)."
   echo -e "  --download-url\tOptional. The URL from where to download $GRUNTWORK_INSTALLER_SCRIPT_NAME. Mostly used for automated tests. Default: $GRUNTWORK_INSTALLER_DOWNLOAD_URL_BASE/(version)/$GRUNTWORK_INSTALLER_SCRIPT_NAME."
   echo -e "  --no-sudo\tOptional. When true, don't use sudo to install binaries. Default: false"
+  echo -e "  --enable-retries\tOptional. Enable retry logic for downloads across the script and dependencies."
   echo
   echo "Examples:"
   echo
@@ -74,10 +78,11 @@ function download_url_to_file {
   local -r file="$2"
   local -r tmp_path=$(mktemp "/tmp/gruntwork-bootstrap-download-XXXXXX")
   local -r no_sudo="$3"
+  local -r retry_number="$4"
 
   echo "Downloading $url to $tmp_path"
   if command_exists "curl"; then
-    local -r status_code=$(curl -L -s -w '%{http_code}' -o "$tmp_path" "$url")
+    local -r status_code=$(curl --retry=$retry_number --retry-connrefused -L -s -w '%{http_code}' -o "$tmp_path" "$url")
     assert_successful_status_code "$status_code" "$url"
 
     echo "Moving $tmp_path to $file"
@@ -147,6 +152,7 @@ function download_and_install {
   local -r url="$1"
   local -r install_path="$2"
   local -r no_sudo="$3"
+  local -r retry_number="$4"
 
   download_url_to_file "$url" "$install_path" "$no_sudo"
   maybe_sudo "$no_sudo" chmod 0755 "$install_path"
@@ -156,6 +162,7 @@ function install_fetch {
   local -r install_path="$1"
   local -r version="$2"
   local -r no_sudo="$3"
+  local -r retry_number="$4"
 
   local -r os=$(get_os_name)
   local -r os_arch=$(get_os_arch_gox_format)
@@ -175,6 +182,7 @@ function install_gruntwork_installer {
   local -r version="$2"
   local -r download_url="$3"
   local -r no_sudo="$4"
+  local -r retry_number="$5"
 
   echo "Installing $GRUNTWORK_INSTALLER_SCRIPT_NAME version $version to $install_path"
   download_and_install "$download_url" "$install_path" "$no_sudo"
@@ -215,6 +223,7 @@ EOF
 
 function bootstrap {
   local fetch_version="$DEFAULT_FETCH_VERSION"
+  local retry_number="$DEFAULT_CURL_RETRY_NUMBER"
   local installer_version=""
   local download_url=""
   local user_data_folder_owner
@@ -245,6 +254,10 @@ function bootstrap {
         no_sudo="$2"
         shift
         ;;
+      --enable-retries)
+        retry_number=10
+        shift
+        ;;
       --help)
         print_usage
         exit
@@ -268,8 +281,8 @@ function bootstrap {
   fi
 
   echo "Installing $GRUNTWORK_INSTALLER_SCRIPT_NAME..."
-  install_fetch "$FETCH_INSTALL_PATH" "$fetch_version" "$no_sudo"
-  install_gruntwork_installer "$GRUNTWORK_INSTALLER_INSTALL_PATH" "$installer_version" "$download_url" "$no_sudo"
+  install_fetch "$FETCH_INSTALL_PATH" "$fetch_version" "$no_sudo" "$retry_number"
+  install_gruntwork_installer "$GRUNTWORK_INSTALLER_INSTALL_PATH" "$installer_version" "$download_url" "$no_sudo" "$retry_number"
   create_user_data_folder "$USER_DATA_DIR" "$user_data_folder_owner" "$no_sudo"
   echo "Success!"
 }

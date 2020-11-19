@@ -14,6 +14,9 @@ readonly MODULE_INSTALL_FILE_NAME="install.sh"
 readonly DEFAULT_MODULES_DOWNLOAD_DIR="/tmp/gruntwork-script-modules"
 readonly DEFAULT_BIN_DIR="/usr/local/bin"
 
+readonly DEFAULT_RETRY_NUMBER=0
+readonly DEFAULT_FETCH_RETRY_NUMBER=10
+
 function print_usage {
   echo
   echo "Usage: gruntwork-install [OPTIONS]"
@@ -39,6 +42,7 @@ function print_usage {
   echo -e "  --binary-install-dir\tThe directory to which the binary will be installed. Only applies to binaries (not modules). Default: $DEFAULT_BIN_DIR"
   echo -e "  --no-sudo\t\tWhen true, don't use sudo to install the binary into the install directory. Only applies to binaries (not modules). Default: false"
   echo -e "  --branch\t\tDownload the latest commit from this branch in --repo. This is an alternative to --tag, used only for testing."
+  echo -e "  --enable-retries\t\tEnable retry logic in all downloads, where possible."
   echo -e "  --help\t\tShow this help text and exit."
 
   echo
@@ -124,6 +128,7 @@ function fetch_script_module {
   local -r branch="$3"
   local -r download_dir="$4"
   local -r repo="$5"
+  local -r retry_number="$6"
 
   # We want to make sure that all folders down to $download_path/$module_name exists, but that $download_path/$module_name itself is empty.
   mkdir -p "$download_dir/$module_name/"
@@ -132,7 +137,7 @@ function fetch_script_module {
   # Note that fetch can safely handle blank arguments for --tag or --branch
   # If both --tag and --branch are specified, --branch will be used
   log_info "Downloading module $module_name from $repo"
-  fetch --repo="$repo" --tag="$tag" --branch="$branch" --source-path="/modules/$module_name" "$download_dir/$module_name"
+  fetch --retries=$retry_number --repo="$repo" --tag="$tag" --branch="$branch" --source-path="/modules/$module_name" "$download_dir/$module_name"
 }
 
 # Download a binary asset from a GitHub release using fetch (https://github.com/gruntwork-io/fetch)
@@ -145,6 +150,7 @@ function fetch_binary {
   local -r sha512_checksum="$6"
   local -r binary_install_dir="$7"
   local -r no_sudo="$8"
+  local -r retry_number="$9"
 
   local binary_name_full=""
   binary_name_full=$(determine_binary_name "$binary_name")
@@ -157,11 +163,11 @@ function fetch_binary {
   rm -f "$download_dir/$binary_name_full"
 
   if [[ -n "$sha256_checksum" ]]; then
-    fetch --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir" --release-asset-checksum-algo "sha256" --release-asset-checksum "$sha256_checksum"
+    fetch --retries=$retry_number --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir" --release-asset-checksum-algo "sha256" --release-asset-checksum "$sha256_checksum"
    elif [[ -n "$sha512_checksum" ]]; then
-    fetch --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir" --release-asset-checksum-algo "sha512" --release-asset-checksum "$sha512_checksum"
+    fetch --retries=$retry_number --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir" --release-asset-checksum-algo "sha512" --release-asset-checksum "$sha512_checksum"
   else
-    fetch --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir"
+    fetch --retries=$retry_number --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir"
   fi
 
   log_info "Moving $full_download_path to $full_dest_path and setting execute permissions"
@@ -262,6 +268,7 @@ function install_script_module {
   local binary_install_dir="$DEFAULT_BIN_DIR"
   local repo=""
   local download_dir="$DEFAULT_MODULES_DOWNLOAD_DIR"
+  local retry_number="$DEFAULT_RETRY_NUMBER"
   local module_params=()
   local no_sudo="false"
 
@@ -315,6 +322,10 @@ function install_script_module {
         no_sudo="$2"
         shift
         ;;
+      --enable-retries)
+        retry_number="$DEFAULT_FETCH_RETRY_NUMBER"
+        shift
+        ;;
       --help)
         print_usage
         exit
@@ -354,12 +365,12 @@ function install_script_module {
 
   if [[ -n "$module_name" ]]; then
     log_info "Installing from $module_name..."
-    fetch_script_module "$module_name" "$tag" "$branch" "$download_dir" "$repo"
+    fetch_script_module "$module_name" "$tag" "$branch" "$download_dir" "$repo" "$retry_number"
     validate_module "$module_name" "$download_dir" "$tag" "$branch" "$repo"
     run_module "$module_name" "$download_dir" "$tag" "$branch" "${module_params[@]}"
   else
     log_info "Installing $binary_name..."
-    fetch_binary "$binary_name" "$tag" "$download_dir" "$repo" "$binary_sha256_checksum" "$binary_sha512_checksum" "$binary_install_dir" "$no_sudo"
+    fetch_binary "$binary_name" "$tag" "$download_dir" "$repo" "$binary_sha256_checksum" "$binary_sha512_checksum" "$binary_install_dir" "$no_sudo" "$retry_number"
   fi
 
   log_info "Success!"
