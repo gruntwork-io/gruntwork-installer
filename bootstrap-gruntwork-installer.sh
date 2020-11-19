@@ -82,7 +82,7 @@ function download_url_to_file {
 
   echo "Downloading $url to $tmp_path"
   if command_exists "curl"; then
-    local -r status_code=$(curl --retry=$retry_number --retry-connrefused -L -s -w '%{http_code}' -o "$tmp_path" "$url")
+    local -r status_code=$(curl --retry $retry_number --retry-connrefused -L -s -w '%{http_code}' -o "$tmp_path" "$url")
     assert_successful_status_code "$status_code" "$url"
 
     echo "Moving $tmp_path to $file"
@@ -154,7 +154,9 @@ function download_and_install {
   local -r no_sudo="$3"
   local -r retry_number="$4"
 
-  download_url_to_file "$url" "$install_path" "$no_sudo"
+  echo "RT", $retry_number
+
+  download_url_to_file "$url" "$install_path" "$no_sudo" "$retry_number"
   maybe_sudo "$no_sudo" chmod 0755 "$install_path"
 }
 
@@ -174,7 +176,7 @@ function install_fetch {
 
   echo "Installing fetch version $version to $install_path"
   local -r url="${FETCH_DOWNLOAD_URL_BASE}/${version}/fetch_${os}_${os_arch}"
-  download_and_install "$url" "$install_path" "$no_sudo"
+  download_and_install "$url" "$install_path" "$no_sudo" "$retry_number"
 }
 
 function install_gruntwork_installer {
@@ -185,7 +187,7 @@ function install_gruntwork_installer {
   local -r retry_number="$5"
 
   echo "Installing $GRUNTWORK_INSTALLER_SCRIPT_NAME version $version to $install_path"
-  download_and_install "$download_url" "$install_path" "$no_sudo"
+  download_and_install "$download_url" "$install_path" "$no_sudo" "$retry_number"
 }
 
 function assert_not_empty {
@@ -255,8 +257,7 @@ function bootstrap {
         shift
         ;;
       --enable-retries)
-        retry_number=10
-        shift
+        retry_number="$ENABLED_CURL_RETRY_NUMBER"
         ;;
       --help)
         print_usage
