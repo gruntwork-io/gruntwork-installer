@@ -42,7 +42,7 @@ function print_usage {
   echo -e "  --binary-install-dir\tThe directory to which the binary will be installed. Only applies to binaries (not modules). Default: $DEFAULT_BIN_DIR"
   echo -e "  --no-sudo\t\tWhen true, don't use sudo to install the binary into the install directory. Only applies to binaries (not modules). Default: false"
   echo -e "  --branch\t\tDownload the latest commit from this branch in --repo. This is an alternative to --tag, used only for testing."
-  echo -e "  --enable-retries\t\tEnable retry logic in all downloads, where possible."
+  echo -e "  --enable-retries\tEnable retry logic in all downloads, where possible."
   echo -e "  --help\t\tShow this help text and exit."
 
   echo
@@ -324,7 +324,6 @@ function install_script_module {
         ;;
       --enable-retries)
         retry_number="$DEFAULT_FETCH_RETRY_NUMBER"
-        shift
         ;;
       --help)
         print_usage
