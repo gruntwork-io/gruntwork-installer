@@ -21,7 +21,7 @@ set -e
 readonly BIN_DIR="/usr/local/bin"
 readonly USER_DATA_DIR="/etc/user-data"
 
-readonly DEFAULT_FETCH_VERSION="v0.3.2"
+readonly DEFAULT_FETCH_VERSION="v0.3.13"
 readonly FETCH_DOWNLOAD_URL_BASE="https://github.com/gruntwork-io/fetch/releases/download"
 readonly FETCH_INSTALL_PATH="$BIN_DIR/fetch"
 
