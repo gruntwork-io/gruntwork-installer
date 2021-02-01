@@ -27,10 +27,10 @@ function print_usage {
   echo
   echo "Specify exactly one of:"
   echo
-  echo -e "  --module-name\t\tThe name of a module to install. Can be any folder within the $MODULES_DIR directory of --repo."
-  echo -e "  --binary-name\t\tThe name of a binary to install. Can be any file uploaded as a release asset in --repo."
-  echo -e "  --binary-sha256-checksum\t\tThe SHA256 checksum of the binary specified by --binary-name. Should be exactly 64 characters."
-  echo -e "  --binary-sha512-checksum\t\tThe SHA512 checksum of the binary specified by --binary-name. Should be exactly 128 characters."
+  echo -e "  --module-name\t\t\tThe name of a module to install. Can be any folder within the $MODULES_DIR directory of --repo."
+  echo -e "  --binary-name\t\t\tThe name of a binary to install. Can be any file uploaded as a release asset in --repo."
+  echo -e "  --binary-sha256-checksum\tThe SHA256 checksum of the binary specified by --binary-name. Should be exactly 64 characters."
+  echo -e "  --binary-sha512-checksum\tThe SHA512 checksum of the binary specified by --binary-name. Should be exactly 128 characters."
   echo
   echo "Optional Arguments:"
   echo
@@ -46,7 +46,8 @@ function print_usage {
   echo
   echo "  gruntwork-install \\"
   echo "    --module-name 'fail2ban' \\"
-  echo "    --repo 'https://github.com/gruntwork-io/module-security' \\"
+  echo "    --repo 'https://github.com/gruntwork-io/terraform-aws-security' \\"
+  echo "    --tag 'v0.44.9'"  
   echo
 }
 
