@@ -10,7 +10,7 @@ readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "Using local copy of bootstrap installer to install local copy of gruntwork-install"
 ./src/bootstrap-gruntwork-installer.sh --download-url "$LOCAL_INSTALL_URL" --version "ignored-for-local-install"
 
-echo "Using gruntwork-install to install a module from the module-ecs repo"
+echo "Using gruntwork-install to install a module from the module-ecs repo using branch"
 gruntwork-install --module-name "ecs-scripts" --repo "https://github.com/gruntwork-io/module-ecs" --branch "v0.0.1"
 
 echo "Using gruntwork-install to install a module from the module-ecs repo with --download-dir option"
@@ -21,6 +21,12 @@ configure-ecs-instance --help
 
 echo "Using gruntwork-install to install a module from the gruntwork-install repo and passing args to it via --module-param"
 gruntwork-install --module-name "dummy-module" --repo "https://github.com/gruntwork-io/gruntwork-installer" --tag "v0.0.25" --module-param "file-to-cat=$SCRIPT_DIR/integration-test.sh"
+
+echo "Using gruntwork-install to install a module from the gruntwork-install repo with branch as ref"
+gruntwork-install --module-name "dummy-module" --repo "https://github.com/gruntwork-io/gruntwork-installer" --ref "for-testing-dont-delete" --module-param "file-to-cat=$SCRIPT_DIR/integration-test.sh"
+
+echo "Using gruntwork-install to install a module from the gruntwork-install repo with tag as ref"
+gruntwork-install --module-name "dummy-module" --repo "https://github.com/gruntwork-io/gruntwork-installer" --ref "v0.0.25" --module-param "file-to-cat=$SCRIPT_DIR/integration-test.sh"
 
 echo "Using gruntwork-install to install a test module from the gruntwork-install repo and test that it's args are maintained via --module-param"
 gruntwork-install --module-name "args-test" --repo "https://github.com/gruntwork-io/gruntwork-installer" --tag "v0.0.25" --module-param 'test-args=1 2 3 *'

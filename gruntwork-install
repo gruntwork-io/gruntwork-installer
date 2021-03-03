@@ -38,7 +38,8 @@ function print_usage {
   echo -e "  --download-dir\tThe directory to which the module will be downloaded and from which it will be installed. Default: $DEFAULT_MODULES_DOWNLOAD_DIR"
   echo -e "  --binary-install-dir\tThe directory to which the binary will be installed. Only applies to binaries (not modules). Default: $DEFAULT_BIN_DIR"
   echo -e "  --no-sudo\t\tWhen true, don't use sudo to install the binary into the install directory. Only applies to binaries (not modules). Default: false"
-  echo -e "  --branch\t\tDownload the latest commit from this branch in --repo. This is an alternative to --tag, used only for testing."
+  echo -e "  --branch\t\tDownload the latest commit from this branch in --repo. Does not work with installing binaries (--binary-name). This is an alternative to --tag, used only for testing."
+  echo -e "  --ref\t\tDownload the specific Git ref (branch, tag, or commit SHA) in --repo. Does not work with installing binaries (--binary-name). This is an alternative to --tag and --branch, used only for testing."
   echo -e "  --help\t\tShow this help text and exit."
 
   echo
@@ -47,7 +48,7 @@ function print_usage {
   echo "  gruntwork-install \\"
   echo "    --module-name 'fail2ban' \\"
   echo "    --repo 'https://github.com/gruntwork-io/terraform-aws-security' \\"
-  echo "    --tag 'v0.44.9'"  
+  echo "    --tag 'v0.44.9'"
   echo
 }
 
@@ -123,8 +124,9 @@ function fetch_script_module {
   local -r module_name="$1"
   local -r tag="$2"
   local -r branch="$3"
-  local -r download_dir="$4"
-  local -r repo="$5"
+  local -r ref="$4"
+  local -r download_dir="$5"
+  local -r repo="$6"
 
   # We want to make sure that all folders down to $download_path/$module_name exists, but that $download_path/$module_name itself is empty.
   mkdir -p "$download_dir/$module_name/"
@@ -133,7 +135,7 @@ function fetch_script_module {
   # Note that fetch can safely handle blank arguments for --tag or --branch
   # If both --tag and --branch are specified, --branch will be used
   log_info "Downloading module $module_name from $repo"
-  fetch --repo="$repo" --tag="$tag" --branch="$branch" --source-path="/modules/$module_name" "$download_dir/$module_name"
+  fetch --ref="$ref" --repo="$repo" --tag="$tag" --branch="$branch" --source-path="/modules/$module_name" "$download_dir/$module_name"
 }
 
 # Download a binary asset from a GitHub release using fetch (https://github.com/gruntwork-io/fetch)
@@ -256,6 +258,7 @@ function run_module {
 function install_script_module {
   local tag=""
   local branch=""
+  local ref=""
   local module_name=""
   local binary_name=""
   local binary_sha256_checksum=""
@@ -276,6 +279,10 @@ function install_script_module {
         ;;
       --branch)
         branch="$2"
+        shift
+        ;;
+      --ref)
+        ref="$2"
         shift
         ;;
       --module-name)
@@ -355,7 +362,7 @@ function install_script_module {
 
   if [[ -n "$module_name" ]]; then
     log_info "Installing from $module_name..."
-    fetch_script_module "$module_name" "$tag" "$branch" "$download_dir" "$repo"
+    fetch_script_module "$module_name" "$tag" "$branch" "$ref" "$download_dir" "$repo"
     validate_module "$module_name" "$download_dir" "$tag" "$branch" "$repo"
     run_module "$module_name" "$download_dir" "$tag" "$branch" "${module_params[@]}"
   else
