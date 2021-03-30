@@ -59,22 +59,22 @@ Option                      | Required | Description
 ##### Example 1: Download and Install a Script Module with No Parameters
 
 Install the [ecs-scripts
-module](https://github.com/gruntwork-io/module-ecs/tree/master/modules/ecs-scripts) from the [module-ecs
-repo](https://github.com/gruntwork-io/module-ecs), version `v0.0.1`:
+module](https://github.com/gruntwork-io/terraform-aws-ecs/tree/master/modules/ecs-scripts) from the [terraform-aws-ecs
+repo](https://github.com/gruntwork-io/terraform-aws-ecs), version `v0.0.1`:
 
 ```
-gruntwork-install --module-name 'ecs-scripts' --repo 'https://github.com/gruntwork-io/module-ecs' --tag 'v0.0.1'
+gruntwork-install --module-name 'ecs-scripts' --repo 'https://github.com/gruntwork-io/terraform-aws-ecs' --tag 'v0.0.1'
 ```
 
 ##### Example 2: Download and Install a Script Module with Parameters
 
 Install the [fail2ban
-module](https://github.com/gruntwork-io/module-security/tree/master/modules/fail2ban) from the [module-security
-repo](https://github.com/gruntwork-io/module-security), passing two custom parameters to it:
+module](https://github.com/gruntwork-io/terraform-aws-security/tree/master/modules/fail2ban) from the [terraform-aws-security
+repo](https://github.com/gruntwork-io/terraform-aws-security), passing two custom parameters to it:
 
 
 ```
-gruntwork-install --module-name 'fail2ban' --repo 'module-security' -module-param 'ban-time=3600'
+gruntwork-install --module-name 'fail2ban' --repo 'terraform-aws-security' -module-param 'ban-time=3600'
 ```
 
 ##### Example 3: Download and Install a Binary Module
@@ -119,8 +119,8 @@ and then uses it to install several modules:
     {
       "type": "shell",
       "inline": [
-        "gruntwork-install --module-name 'ecs-scripts' --repo 'https://github.com/gruntwork-io/module-ecs' --tag 'v0.0.1'",
-        "gruntwork-install --module-name 'fail2ban' --repo 'https://github.com/gruntwork-io/module-security' -module-param 'ban-time=3600'",
+        "gruntwork-install --module-name 'ecs-scripts' --repo 'https://github.com/gruntwork-io/terraform-aws-ecs' --tag 'v0.0.1'",
+        "gruntwork-install --module-name 'fail2ban' --repo 'https://github.com/gruntwork-io/terraform-aws-security' -module-param 'ban-time=3600'",
         "gruntwork-install --binary-name 'gruntkms' --repo 'https://github.com/gruntwork-io/gruntkms' --tag 'v0.0.1'"
       ],
       "environment_vars": ["GITHUB_OAUTH_TOKEN={{user `github_auth_token`}}"]
@@ -194,10 +194,10 @@ it to a GitHub release with the name format `<NAME>_<OS>_<ARCH>`.
 ### Example
 
 For example, in your Packer and Docker templates, you can use `gruntwork-install` to install the [ecs-scripts
-module](https://github.com/gruntwork-io/module-ecs/tree/master/modules/ecs-scripts) as follows:
+module](https://github.com/gruntwork-io/terraform-aws-ecs/tree/master/modules/ecs-scripts) as follows:
 
 ```
-gruntwork-install --module-name 'ecs-scripts' --repo 'https://github.com/gruntwork-io/module-ecs' --tag 'v0.0.1'
+gruntwork-install --module-name 'ecs-scripts' --repo 'https://github.com/gruntwork-io/terraform-aws-ecs' --tag 'v0.0.1'
 ```
 
 In https://github.com/gruntwork-io/module-ecs, we download the contents of `/modules/ecs-scripts` and run

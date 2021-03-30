@@ -10,11 +10,11 @@ readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "Using local copy of bootstrap installer to install local copy of gruntwork-install"
 ./src/bootstrap-gruntwork-installer.sh --download-url "$LOCAL_INSTALL_URL" --version "ignored-for-local-install"
 
-echo "Using gruntwork-install to install a module from the module-ecs repo using branch"
-gruntwork-install --module-name "ecs-scripts" --repo "https://github.com/gruntwork-io/module-ecs" --branch "v0.0.1"
+echo "Using gruntwork-install to install a module from the terraform-aws-ecs repo using branch"
+gruntwork-install --module-name "ecs-scripts" --repo "https://github.com/gruntwork-io/terraform-aws-ecs" --branch "v0.0.1"
 
-echo "Using gruntwork-install to install a module from the module-ecs repo with --download-dir option"
-gruntwork-install --module-name "ecs-scripts" --repo "https://github.com/gruntwork-io/module-ecs" --branch "v0.0.1" --download-dir ~/tmp
+echo "Using gruntwork-install to install a module from the terraform-aws-ecs repo with --download-dir option"
+gruntwork-install --module-name "ecs-scripts" --repo "https://github.com/gruntwork-io/terraform-aws-ecs" --branch "v0.0.1" --download-dir ~/tmp
 
 echo "Checking that the ecs-scripts installed correctly"
 configure-ecs-instance --help
