@@ -36,6 +36,7 @@ function print_usage {
   echo
   echo -e "  --module-param\tA key-value pair of the format key=value you wish to pass to the module as a parameter. May be used multiple times."
   echo -e "  --download-dir\tThe directory to which the module will be downloaded and from which it will be installed. Default: $DEFAULT_MODULES_DOWNLOAD_DIR"
+  echo -e "  --download-only\tWhether to only download the binary or module and not execute it. Default false"
   echo -e "  --binary-install-dir\tThe directory to which the binary will be installed. Only applies to binaries (not modules). Default: $DEFAULT_BIN_DIR"
   echo -e "  --no-sudo\t\tWhen true, don't use sudo to install the binary into the install directory. Only applies to binaries (not modules). Default: false"
   echo -e "  --branch\t\tDownload the latest commit from this branch in --repo. Does not work with installing binaries (--binary-name). This is an alternative to --tag, used only for testing."
@@ -268,6 +269,7 @@ function install_script_module {
   local binary_install_dir="$DEFAULT_BIN_DIR"
   local repo=""
   local download_dir="$DEFAULT_MODULES_DOWNLOAD_DIR"
+  local download_only="false"
   local module_params=()
   local no_sudo="false"
 
@@ -315,6 +317,10 @@ function install_script_module {
         ;;
       --download-dir)
         download_dir="$2"
+        shift
+        ;;
+      --download-only)
+        download_only="$2"
         shift
         ;;
       --binary-install-dir)
@@ -366,7 +372,11 @@ function install_script_module {
     log_info "Installing from $module_name..."
     fetch_script_module "$module_name" "$tag" "$branch" "$ref" "$download_dir" "$repo"
     validate_module "$module_name" "$download_dir" "$tag" "$branch" "$repo"
-    run_module "$module_name" "$download_dir" "$tag" "$branch" "${module_params[@]}"
+    if [[ "$download_only" == "true" ]]; then
+      log_info "Skipping execution of install script for module: $module_name"
+    else
+      run_module "$module_name" "$download_dir" "$tag" "$branch" "${module_params[@]}"
+    fi
   else
     log_info "Installing $binary_name..."
     fetch_binary "$binary_name" "$tag" "$download_dir" "$repo" "$binary_sha256_checksum" "$binary_sha512_checksum" "$binary_install_dir" "$no_sudo"
