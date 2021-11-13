@@ -134,6 +134,8 @@ function get_os_arch_gox_format {
 
   if string_contains "$arch" "arm64"; then
     echo "arm64"
+  elif string_contains "$arch" "aarch64"; then
+    echo "arm64"
   elif string_contains "$arch" "64"; then
     echo "amd64"
   elif string_contains "$arch" "386"; then
