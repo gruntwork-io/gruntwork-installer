@@ -21,7 +21,7 @@ set -e
 readonly BIN_DIR="/usr/local/bin"
 readonly USER_DATA_DIR="/etc/user-data"
 
-readonly DEFAULT_FETCH_VERSION="v0.4.1"
+readonly DEFAULT_FETCH_VERSION="v0.4.2"
 readonly FETCH_DOWNLOAD_URL_BASE="https://github.com/gruntwork-io/fetch/releases/download"
 readonly FETCH_INSTALL_PATH="$BIN_DIR/fetch"
 
@@ -133,6 +133,8 @@ function get_os_arch_gox_format {
   local -r arch=$(get_os_arch)
 
   if string_contains "$arch" "arm64"; then
+    echo "arm64"
+  elif string_contains "$arch" "aarch64"; then
     echo "arm64"
   elif string_contains "$arch" "64"; then
     echo "amd64"
