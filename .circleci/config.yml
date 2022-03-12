@@ -13,9 +13,6 @@ jobs:
           name: run tests
           command: |
             ./_ci/run-tests.sh
-    machine:
-      enabled: true
-      image: ubuntu-2004:202111-02
 workflows:
   version: 2
   install-and-test:
