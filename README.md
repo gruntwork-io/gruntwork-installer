@@ -77,7 +77,7 @@ repo](https://github.com/gruntwork-io/terraform-aws-security), passing two custo
 
 
 ```
-gruntwork-install --module-name 'fail2ban' --repo 'terraform-aws-security' -module-param 'ban-time=3600'
+gruntwork-install --module-name 'fail2ban' --repo 'terraform-aws-security' --module-param 'ban-time=3600'
 ```
 
 ##### Example 3: Download and Install a Binary Module
