@@ -12,7 +12,7 @@ Read the [Gruntwork contribution guidelines](https://gruntwork.notion.site/Grunt
 
 - [ ] Update the docs.
 - [ ] Run the relevant tests successfully, including pre-commit checks.
-- [ ] Ensure any 3rd party code adheres with our [license policy](https://www.notion.so/gruntwork/Gruntwork-licenses-and-open-source-usage-policy-f7dece1f780341c7b69c1763f22b1378) or delete this line if its not applicable.
+- [ ] Ensure any 3rd party code adheres with our [license policy](https://www.notion.so/gruntwork/Gruntwork-licenses-and-open-source-usage-policy-f7dece1f780341c7b69c1763f22b1378) or delete this line if it's not applicable.
 - [ ] Include release notes. If this PR is backward incompatible, include a migration guide.
 
 ## Release Notes (draft)
