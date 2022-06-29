@@ -17,7 +17,7 @@ Our solution is to make the `gruntwork-install` tool open source and to publish 
 script that anyone can use to install `gruntwork-install` itself. To use it, execute the following:
 
 ```
-curl -LsS https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.22
+curl -LsS https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.38
 ```
 
 Notice the `--version` parameter at the end where you specify which version of `gruntwork-install` to install. See the
@@ -267,3 +267,4 @@ that'll happen when you execute it is a harmless syntax error.
 1. Configure a CI build to automatically set the `--version` flag for each release.
 1. Add an `uninstall` command that uses an `uninstall.sh` script in each module.
 1. Add support for modules declaring their dependencies. Alternatively, consider Nix again as a dependency manager.
+
