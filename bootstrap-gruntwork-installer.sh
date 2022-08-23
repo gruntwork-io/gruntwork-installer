@@ -220,10 +220,11 @@ EOF
 }
 
 function warn {
-  echo "⚠️: Warning: You're installing this tool from the `master` branch, which will be removed February 1, 2023."
-  echo "   Please instead use a tagged release."
-  echo "   E.g.:"
-  echo "   curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/v0.0.38/bootstrap-gruntwork-installer.sh"
+  echo "--------------------------------------------------------------------------------------------------------------"
+  echo "⚠️: Warning: You're installing this tool from the 'master' branch, which will be removed February 1, 2023."
+  echo "   Please instead use a tagged release. E.g.:"
+  echo "   curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/v0.0.38/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.38"
+  echo "--------------------------------------------------------------------------------------------------------------"
 }
 
 function bootstrap {
