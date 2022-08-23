@@ -2,19 +2,21 @@
 #
 # A bootstrap script to install the Gruntwork Installer.
 #
-# Why:
+# Usage:
 #
-# The goal of the Gruntwork Installer is to make make installing Gruntwork Script Modules feel as easy as installing a
-# package using apt-get, brew, or yum. However, something has to install the Gruntwork Installer first. One option is
-# for each Gruntwork client to do so manually, which would basically entail copying and pasting all the code below.
-# This is tedious and would give us no good way to push updates to this bootstrap script.
+# curl -LsS https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/v0.0.38/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.38
 #
-# So instead, we recommend that clients use this tiny bootstrap script as a one-liner:
+# Rationale:
 #
-# curl -LsS https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.38
+# The Gruntwork Installer makes installing Gruntwork Script Modules as easy as installing a package using apt-get, 
+# brew, or yum. However, something has to install the Gruntwork Installer first. One option is for each Gruntwork 
+# client to do so manually, which would basically entail copying and pasting all the code below. This is tedious and 
+# gives us no good way to push updates to this bootstrap script.
 #
-# You can copy this one-liner into your Packer and Docker templates and immediately after, start using the
-# gruntwork-install command.
+# So instead, we recommend that clients use this tiny bootstrap script.
+#
+# In your Packer and Docker templates, you can use the above one-liner to install the Gruntwork Installer, and then
+# start using the `gruntwork-install` command immediately.
 
 set -e
 
@@ -37,19 +39,19 @@ function print_usage {
   echo
   echo "Options:"
   echo
-  echo -e "  --version\t\tRequired. The version of $GRUNTWORK_INSTALLER_SCRIPT_NAME to install (e.g. 0.0.3)."
+  echo -e "  --version\t\tRequired. The version of $GRUNTWORK_INSTALLER_SCRIPT_NAME to install (e.g. v0.0.38)."
   echo -e "  --fetch-version\tOptional. The version of fetch to install. Default: $DEFAULT_FETCH_VERSION."
   echo -e "  --user-data-owner\tOptional. The user who shown own the $USER_DATA_DIR folder. Default: (current user)."
   echo -e "  --download-url\tOptional. The URL from where to download $GRUNTWORK_INSTALLER_SCRIPT_NAME. Mostly used for automated tests. Default: $GRUNTWORK_INSTALLER_DOWNLOAD_URL_BASE/(version)/$GRUNTWORK_INSTALLER_SCRIPT_NAME."
-  echo -e "  --no-sudo\tOptional. When true, don't use sudo to install binaries. Default: false"
+  echo -e "  --no-sudo\tOptional. When true, don't use sudo to install binaries. Default: false."
   echo
   echo "Examples:"
   echo
-  echo "  Install version 0.0.3:"
-  echo "    bootstrap-gruntwork-installer.sh --version 0.0.3"
+  echo "  Install version v0.0.38:"
+  echo "    bootstrap-gruntwork-installer.sh --version v0.0.38"
   echo
-  echo "  One-liner to download this bootstrap script from GitHub and run it to install version 0.0.3:"
-  echo "    curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version 0.0.3"
+  echo "  One-liner to download this bootstrap script from GitHub and run it to install version v0.0.38:"
+  echo "    curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/v0.0.38/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.38"
 }
 
 function maybe_sudo {
