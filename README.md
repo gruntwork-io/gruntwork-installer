@@ -100,35 +100,35 @@ and then uses it to install several modules:
 
 ```json
 {
-    "variables": {
-          "github_auth_token": "{{env `GITHUB_OAUTH_TOKEN`}}"
-            },
-              "builders": [
-                  {
-                          "ami_name": "gruntwork-install-example-{{isotime | clean_ami_name}}",
-                                "instance_type": "t2.micro",
-                                      "region": "us-east-1",
-                                            "type": "amazon-ebs",
-                                                  "source_ami": "ami-fce3c696",
-                                                        "ssh_username": "ubuntu"
-                                                            }
-                                                              ],
-                                                                "provisioners": [
-                                                                    {
-                                                                            "type": "shell",
-                                                                                  "inline":
-                                                                                          "curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/v0.0.38/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.16"
-                                                                                              },
-                                                                                                  {
-                                                                                                          "type": "shell",
-                                                                                                                "inline": [
-                                                                                                                        "gruntwork-install --module-name 'ecs-scripts' --repo 'https://github.com/gruntwork-io/terraform-aws-ecs' --tag 'v0.0.1'",
-                                                                                                                                "gruntwork-install --module-name 'fail2ban' --repo 'https://github.com/gruntwork-io/terraform-aws-security' -module-param 'ban-time=3600'",
-                                                                                                                                        "gruntwork-install --binary-name 'gruntkms' --repo 'https://github.com/gruntwork-io/gruntkms' --tag 'v0.0.1'"
-                                                                                                                                              ],
-                                                                                                                                                    "environment_vars": ["GITHUB_OAUTH_TOKEN={{user `github_auth_token`}}"]
-                                                                                                                                                        }
-                                                                                                                                                          ]
+  "variables": {
+    "github_auth_token": "{{env `GITHUB_OAUTH_TOKEN`}}"
+  },
+  "builders": [
+    {
+      "ami_name": "gruntwork-install-example-{{isotime | clean_ami_name}}",
+      "instance_type": "t2.micro",
+      "region": "us-east-1",
+      "type": "amazon-ebs",
+      "source_ami": "ami-fce3c696",
+      "ssh_username": "ubuntu"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline":
+        "curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/v0.0.38/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.16"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "gruntwork-install --module-name 'ecs-scripts' --repo 'https://github.com/gruntwork-io/terraform-aws-ecs' --tag 'v0.0.1'",
+        "gruntwork-install --module-name 'fail2ban' --repo 'https://github.com/gruntwork-io/terraform-aws-security' -module-param 'ban-time=3600'",
+        "gruntwork-install --binary-name 'gruntkms' --repo 'https://github.com/gruntwork-io/gruntkms' --tag 'v0.0.1'"
+      ],
+      "environment_vars": ["GITHUB_OAUTH_TOKEN={{user `github_auth_token`}}"]
+    }
+  ]
 }
 ```
 
@@ -178,14 +178,12 @@ Some Script Modules are so common that we've made them freely available in the [
 `gruntwork-install` helps you install a Gruntwork Module. Here's how it works:
 
 1. It uses [fetch](https://github.com/gruntwork-io/fetch) to download the specified version of the scripts or binary from
-   the (public or private) git repo specified via the `--repo` option.
-   1. You need to specify either a module name or a binary name. 
-       - If you use the `--module-name` parameter, it downloads the files from the `modules` folder of `--repo` and runs
-          the `install.sh` script of that module.
-              - If you use the `--binary-name` parameter, it downloads the right binary for your OS, copies it to `/usr/local/bin`,
-                 and gives it execute permissions.
-
-                 That's it!
+the (public or private) git repo specified via the `--repo` option.
+1. You need to specify either a module name or a binary name. 
+  - If you use the `--module-name` parameter, it downloads the files from the `modules` folder of `--repo` and runs
+the `install.sh` script of that module.
+  - If you use the `--binary-name` parameter, it downloads the right binary for your OS, copies it to `/usr/local/bin`,
+and gives it execute permissions.
 
 ## Create Your Own Gruntwork Modules
 
@@ -211,22 +209,22 @@ In https://github.com/gruntwork-io/module-ecs, we download the contents of `/mod
 
 The tests for this repo are defined in the `test` folder. They are designed to run in a Docker container so that you
 do not repeatedly dirty up your local OS while testing. We've defined a `test/docker-compose.yml` file as a convenient
-  way to expose the environment variables we need for testing and to mount local directories as volumes for rapid
-  iteration.
+way to expose the environment variables we need for testing and to mount local directories as volumes for rapid
+iteration.
 
-  To run the tests:
+To run the tests:
 
-  1. Set your [GitHub access token](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) as
-     the environment variable `GITHUB_OAUTH_TOKEN`.
-     1. `./_ci/run-tests.sh`
+1. Set your [GitHub access token](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) as
+   the environment variable `GITHUB_OAUTH_TOKEN`.
+1. `./_ci/run-tests.sh`
 
 ## Security
 
 ### Validate the Downloaded Binary
 
-Gruntwork-install will retrieve the desired GitHub Release Asset specified by the `--binary-name` property, but how can
-we confirm that this binary has not been tampered with? In short, we trust that the maintainer has been responsible and
-not allowed a malicious third-party to corrupt the Release Asset.
+`gruntwork-install` will retrieve the desired GitHub Release Asset specified by the `--binary-name` property, but how 
+can we confirm that this binary has not been tampered with? In short, we trust that the maintainer has been responsible
+and not allowed a malicious third-party to corrupt the Release Asset.
 
 You can narrow the scope of this trust by computing a checksum on a Release Asset using a UNIX command like
 `shasum -a 256 /path/to/file` when you first download the release. You can then feed this value (e.g. `b0b30cc24aed1b8cded2df903183b884c77f086efffc36ef19876d1c55fef93d`)
