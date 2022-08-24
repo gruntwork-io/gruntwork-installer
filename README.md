@@ -1,11 +1,11 @@
 [![Maintained by Gruntwork.io](https://img.shields.io/badge/maintained%20by-gruntwork.io-%235849a6.svg)](https://gruntwork.io/?ref=repo_gruntwork_installer)
 # Gruntwork Installer
 
-`gruntwork-install` is a bash script you run to easily download and install "Gruntwork Modules".
+`gruntwork-install` is a bash script you run to easily download and install Gruntwork Modules.
 
 ## Compatibility
 
-Tested under CentOS 7, latest Amazon Linux and Ubuntu 16.04.
+Tested under CentOS 7, latest Amazon Linux, and Ubuntu 16.04.
 
 ## Quick Start
 
@@ -17,13 +17,13 @@ Our solution is to make the `gruntwork-install` tool open source and to publish 
 script that anyone can use to install `gruntwork-install` itself. To use it, execute the following:
 
 ```
-curl -LsS https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.38
+curl -LsS https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/v0.0.38/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.38
 ```
 
 Notice the `--version` parameter at the end where you specify which version of `gruntwork-install` to install. See the
 [releases](https://github.com/gruntwork-io/gruntwork-installer/releases) page for all available versions.
 
-For paranoid security folks, see [is it safe to pipe URLs into bash?](#is-it-safe-to-pipe-urls-into-bash) below.
+For those concerned about security, see [is it safe to pipe URLs into bash?](#is-it-safe-to-pipe-urls-into-bash) below.
 
 ### Use gruntwork-install
 
@@ -62,7 +62,7 @@ Option                      | Required | Description
 ##### Example 1: Download and Install a Script Module with No Parameters
 
 Install the [ecs-scripts
-module](https://github.com/gruntwork-io/terraform-aws-ecs/tree/master/modules/ecs-scripts) from the [terraform-aws-ecs
+module](https://github.com/gruntwork-io/terraform-aws-ecs/tree/main/modules/ecs-scripts) from the [terraform-aws-ecs
 repo](https://github.com/gruntwork-io/terraform-aws-ecs), version `v0.0.1`:
 
 ```
@@ -72,7 +72,7 @@ gruntwork-install --module-name 'ecs-scripts' --repo 'https://github.com/gruntwo
 ##### Example 2: Download and Install a Script Module with Parameters
 
 Install the [fail2ban
-module](https://github.com/gruntwork-io/terraform-aws-security/tree/master/modules/fail2ban) from the [terraform-aws-security
+module](https://github.com/gruntwork-io/terraform-aws-security/tree/main/modules/fail2ban) from the [terraform-aws-security
 repo](https://github.com/gruntwork-io/terraform-aws-security), passing two custom parameters to it:
 
 
@@ -117,7 +117,7 @@ and then uses it to install several modules:
     {
       "type": "shell",
       "inline":
-        "curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.16"
+        "curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/v0.0.38/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.16"
     },
     {
       "type": "shell",
@@ -175,16 +175,15 @@ Some Script Modules are so common that we've made them freely available in the [
 
 ### How `gruntwork-install` Works
 
-To actually install a Gruntwork Module, we wrote a bash script named `gruntwork-install`. Here's how it works:
+`gruntwork-install` helps you install a Gruntwork Module. Here's how it works:
 
 1. It uses [fetch](https://github.com/gruntwork-io/fetch) to download the specified version of the scripts or binary from
-   the (public or private) git repo specified via the `--repo` option.
-1. If you used the `--module-name` parameter, it downloads the files from the `modules` folder of `--repo` and runs
-   the `install.sh` script of that module.
-1. If you used the `--binary-name` parameter, it downloads the right binary for your OS, copies it to `/usr/local/bin`,
-   and gives it execute permissions.
-
-That's it!
+the (public or private) git repo specified via the `--repo` option.
+1. You need to specify either a module name or a binary name. 
+  - If you use the `--module-name` parameter, it downloads the files from the `modules` folder of `--repo` and runs
+the `install.sh` script of that module.
+  - If you use the `--binary-name` parameter, it downloads the right binary for your OS, copies it to `/usr/local/bin`,
+and gives it execute permissions.
 
 ## Create Your Own Gruntwork Modules
 
@@ -197,7 +196,7 @@ it to a GitHub release with the name format `<NAME>_<OS>_<ARCH>`.
 ### Example
 
 For example, in your Packer and Docker templates, you can use `gruntwork-install` to install the [ecs-scripts
-module](https://github.com/gruntwork-io/terraform-aws-ecs/tree/master/modules/ecs-scripts) as follows:
+module](https://github.com/gruntwork-io/terraform-aws-ecs/tree/main/modules/ecs-scripts) as follows:
 
 ```
 gruntwork-install --module-name 'ecs-scripts' --repo 'https://github.com/gruntwork-io/terraform-aws-ecs' --tag 'v0.0.1'
@@ -223,9 +222,9 @@ To run the tests:
 
 ### Validate the Downloaded Binary
 
-Gruntwork-install will retrieve the desired GitHub Release Asset specified by the `--binary-name` property, but how can
-we confirm that this binary has not been tampered with? In short, we trust that the maintainer has been responsible and
-not allowed a malicious third-party to corrupt the Release Asset.
+`gruntwork-install` will retrieve the desired GitHub Release Asset specified by the `--binary-name` property, but how 
+can we confirm that this binary has not been tampered with? In short, we trust that the maintainer has been responsible
+and not allowed a malicious third-party to corrupt the Release Asset.
 
 You can narrow the scope of this trust by computing a checksum on a Release Asset using a UNIX command like
 `shasum -a 256 /path/to/file` when you first download the release. You can then feed this value (e.g. `b0b30cc24aed1b8cded2df903183b884c77f086efffc36ef19876d1c55fef93d`)
@@ -263,7 +262,6 @@ that'll happen when you execute it is a harmless syntax error.
 
 ## TODO
 
-1. Add support for a `--version` flag to `bootstrap-gruntwork-installer.sh` and `gruntwork-install`.
 1. Configure a CI build to automatically set the `--version` flag for each release.
 1. Add an `uninstall` command that uses an `uninstall.sh` script in each module.
 1. Add support for modules declaring their dependencies. Alternatively, consider Nix again as a dependency manager.
