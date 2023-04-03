@@ -14,9 +14,11 @@ readonly MODULE_INSTALL_FILE_NAME="install.sh"
 readonly DEFAULT_MODULES_DOWNLOAD_DIR="/tmp/gruntwork-script-modules"
 readonly DEFAULT_BIN_DIR="/usr/local/bin"
 
+readonly MIXPANEL_API_SECRET="PLACEHOLDER"
+
 function print_usage {
   echo
-  echo "Usage: gruntwork-install [OPTIONS]"
+  echo "Usage: gruntwork-install [OPTIONS] Test"
   echo
   echo "Download a Gruntwork Script Module and install it."
   echo
@@ -59,7 +61,7 @@ function log {
   local -r timestamp=$(date +"%Y-%m-%d %H:%M:%S")
   local -r scriptname="$(basename "$0")"
 
-  >&2 echo -e "${timestamp} [${level}] [$scriptname] ${message[*]}"
+  echo >&2 -e "${timestamp} [${level}] [$scriptname] ${message[*]}"
 }
 
 function log_info {
@@ -119,8 +121,38 @@ function assert_env_var_not_empty {
   fi
 }
 
+function track_event {
+  echo "TRACKING EVENT"
+  local -r run_id=$(uuidgen)
+  local -r event_name="$1"
+  local -r repo="$2"
+  local -r download_successful=$([[ $3 == 0 ]] && echo "true" || echo "false")
+
+  log_info "Tracking Event" "$event_name"
+
+  # Track event
+  curl -s -X POST "https://api.mixpanel.com/import?strict=1" \
+    -u "$MIXPANEL_API_SECRET:" \
+    -H "Content-Type: application/json" \
+    -d @- <<EOF
+[
+  {
+    "event": "$event_name",
+    "properties": {
+      "time": $(date '+%s'),
+      "distinct_id": "$run_id",
+      "\$insert_id": "$run_id",
+      "repo": "$repo",
+      "download_succesful": "$download_successful",
+    }
+  }
+]
+EOF
+}
+
 # Download the files of the given Script Module using fetch (https://github.com/gruntwork-io/fetch)
 function fetch_script_module {
+  echo "FETCHING!!!!!!!!!!!!!!!!!!!!!!!"
   local -r module_name="$1"
   local -r tag="$2"
   local -r branch="$3"
@@ -132,10 +164,16 @@ function fetch_script_module {
   mkdir -p "$download_dir/$module_name/"
   rm -Rf "${download_dir:?}/${module_name:?}/"
 
+  # Used to capture exit code from fetch so that event tracking can be done even if fetch results in an error
+  local -r fetch_exit_code=0
+
   # Note that fetch can safely handle blank arguments for --tag or --branch
   # If both --tag and --branch are specified, --branch will be used
-  log_info "Downloading module $module_name from $repo"
-  fetch --ref="$ref" --repo="$repo" --tag="$tag" --branch="$branch" --source-path="/modules/$module_name" "$download_dir/$module_name"
+  fetch --ref="$ref" --repo="$repo" --tag="$tag" --branch="$branch" --source-path="/modules/$module_name" "$download_dir/$module_name" || fetch_exit_code=$?
+
+  track_event "Download $module_name" "$repo" "$fetch_exit_code"
+
+  exit $fetch_exit_code
 }
 
 # Download a binary asset from a GitHub release using fetch (https://github.com/gruntwork-io/fetch)
@@ -159,12 +197,21 @@ function fetch_binary {
   mkdir -p "$download_dir"
   rm -f "$download_dir/$binary_name_full"
 
+  # Used to capture exit code from fetch so that event tracking can be done even if fetch results in an error
+  local fetch_exit_code=0
+
   if [[ -n "$sha256_checksum" ]]; then
-    fetch --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir" --release-asset-checksum-algo "sha256" --release-asset-checksum "$sha256_checksum"
-   elif [[ -n "$sha512_checksum" ]]; then
-    fetch --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir" --release-asset-checksum-algo "sha512" --release-asset-checksum "$sha512_checksum"
+    fetch --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir" --release-asset-checksum-algo "sha256" --release-asset-checksum "$sha256_checksum" || fetch_exit_code=$?
+  elif [[ -n "$sha512_checksum" ]]; then
+    fetch --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir" --release-asset-checksum-algo "sha512" --release-asset-checksum "$sha512_checksum" || fetch_exit_code=$?
   else
-    fetch --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir"
+    fetch --repo="$repo" --tag="$tag" --release-asset="$binary_name_full" "$download_dir" || fetch_exit_code=$?
+  fi
+
+  track_event "Install $binary_name" "$repo" "$fetch_exit_code"
+
+  if [[ $fetch_exit_code == 1 ]]; then
+    exit $fetch_exit_code
   fi
 
   log_info "Moving $full_download_path to $full_dest_path and setting execute permissions"
@@ -236,7 +283,7 @@ function determine_binary_name {
 function repo_is_public {
   local -r repo_url="$1"
 
-  curl --silent --fail "$repo_url" > /dev/null
+  curl --silent --fail "$repo_url" >/dev/null
 }
 
 function run_module {
@@ -277,65 +324,65 @@ function install_script_module {
     local key="$1"
 
     case "$key" in
-      --tag)
-        tag="$2"
-        shift
-        ;;
-      --branch)
-        branch="$2"
-        shift
-        ;;
-      --ref)
-        ref="$2"
-        shift
-        ;;
-      --module-name)
-        module_name="$2"
-        shift
-        ;;
-      --binary-name)
-        binary_name="$2"
-        shift
-        ;;
-      --binary-sha256-checksum)
-        binary_sha256_checksum="$2"
-        shift
-        ;;
-      --binary-sha512-checksum)
-        binary_sha512_checksum="$2"
-        shift
-        ;;
-      --repo)
-        repo="$2"
-        shift
-        ;;
-      --module-param)
-        local module_param_key="${2%%=*}"
-        local module_param_val="${2#*=}"
-        module_params+=( "--$module_param_key" "$module_param_val" )
-        shift
-        ;;
-      --download-dir)
-        download_dir="$2"
-        shift
-        ;;
-      --binary-install-dir)
-        binary_install_dir="$2"
-        shift
-        ;;
-      --no-sudo)
-        no_sudo="$2"
-        shift
-        ;;
-      --help)
-        print_usage
-        exit
-        ;;
-      *)
-        echo "ERROR: Unrecognized option: $key"
-        print_usage
-        exit 1
-        ;;
+    --tag)
+      tag="$2"
+      shift
+      ;;
+    --branch)
+      branch="$2"
+      shift
+      ;;
+    --ref)
+      ref="$2"
+      shift
+      ;;
+    --module-name)
+      module_name="$2"
+      shift
+      ;;
+    --binary-name)
+      binary_name="$2"
+      shift
+      ;;
+    --binary-sha256-checksum)
+      binary_sha256_checksum="$2"
+      shift
+      ;;
+    --binary-sha512-checksum)
+      binary_sha512_checksum="$2"
+      shift
+      ;;
+    --repo)
+      repo="$2"
+      shift
+      ;;
+    --module-param)
+      local module_param_key="${2%%=*}"
+      local module_param_val="${2#*=}"
+      module_params+=("--$module_param_key" "$module_param_val")
+      shift
+      ;;
+    --download-dir)
+      download_dir="$2"
+      shift
+      ;;
+    --binary-install-dir)
+      binary_install_dir="$2"
+      shift
+      ;;
+    --no-sudo)
+      no_sudo="$2"
+      shift
+      ;;
+    --help)
+      print_usage
+      exit
+      ;;
+    *)
+      echo "ERROR: Unrecognized option: $key"
+      print_usage
+      exit 1
+      ;;
     esac
 
     shift
@@ -349,7 +396,7 @@ function install_script_module {
     assert_env_var_not_empty "GITHUB_OAUTH_TOKEN"
   fi
 
-  if [[ ( -z "$module_name" && -z "$binary_name" ) || ( -n "$module_name" && -n "$binary_name" ) ]]; then
+  if [[ (-z "$module_name" && -z "$binary_name") || (-n "$module_name" && -n "$binary_name") ]]; then
     log_error "You must specify exactly one of --module-name or --binary-name."
     exit 1
   fi
