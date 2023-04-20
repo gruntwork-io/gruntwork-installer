@@ -8,9 +8,9 @@
 #
 # Rationale:
 #
-# The Gruntwork Installer makes installing Gruntwork Script Modules as easy as installing a package using apt-get, 
-# brew, or yum. However, something has to install the Gruntwork Installer first. One option is for each Gruntwork 
-# client to do so manually, which would basically entail copying and pasting all the code below. This is tedious and 
+# The Gruntwork Installer makes installing Gruntwork Script Modules as easy as installing a package using apt-get,
+# brew, or yum. However, something has to install the Gruntwork Installer first. One option is for each Gruntwork
+# client to do so manually, which would basically entail copying and pasting all the code below. This is tedious and
 # gives us no good way to push updates to this bootstrap script.
 #
 # So instead, we recommend that clients use this tiny bootstrap script.
@@ -23,7 +23,7 @@ set -e
 readonly BIN_DIR="/usr/local/bin"
 readonly USER_DATA_DIR="/etc/user-data"
 
-readonly DEFAULT_FETCH_VERSION="v0.4.2"
+readonly DEFAULT_FETCH_VERSION="v0.4.6"
 readonly FETCH_DOWNLOAD_URL_BASE="https://github.com/gruntwork-io/fetch/releases/download"
 readonly FETCH_INSTALL_PATH="$BIN_DIR/fetch"
 
