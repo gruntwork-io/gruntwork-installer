@@ -20,8 +20,8 @@
 
 set -e
 
-readonly BIN_DIR="/usr/local/bin"
-readonly USER_DATA_DIR="/etc/user-data"
+readonly BIN_DIR="${GRUNTWORK_BIN_DIR:-/usr/local/bin}"
+readonly USER_DATA_DIR="${GRUNTWORK_USER_DATA_DIR:-/etc/user-data}"
 
 readonly DEFAULT_FETCH_VERSION="v0.4.6"
 readonly FETCH_DOWNLOAD_URL_BASE="https://github.com/gruntwork-io/fetch/releases/download"
