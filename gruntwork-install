@@ -310,9 +310,13 @@ function install_script_module {
         shift
         ;;
       --module-param)
-        local module_param_key="${2%%=*}"
-        local module_param_val="${2#*=}"
-        module_params+=( "--$module_param_key" "$module_param_val" )
+        if [[ $2 == *"="* ]]; then
+          local module_param_key="${2%%=*}"
+          local module_param_val="${2#*=}"
+          module_params+=( "--$module_param_key" "$module_param_val" )
+        else
+          module_params+=( "--$2" )
+        fi
         shift
         ;;
       --download-dir)

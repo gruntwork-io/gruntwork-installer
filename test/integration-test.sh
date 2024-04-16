@@ -22,6 +22,9 @@ configure-ecs-instance --help
 echo "Using gruntwork-install to install a module from the gruntwork-install repo and passing args to it via --module-param"
 gruntwork-install --module-name "dummy-module" --repo "https://github.com/gruntwork-io/gruntwork-installer" --tag "v0.0.25" --module-param "file-to-cat=$SCRIPT_DIR/integration-test.sh"
 
+echo "Using gruntwork-install to install a module from the gruntwork-install repo and passing mixed args to it via --module-param"
+gruntwork-install --module-name "mixed-args-module" --repo "https://github.com/gruntwork-io/gruntwork-installer" --ref "fix/mixed-args" --module-param "message-to-echo=Hello" --module-param "echo-override"
+
 echo "Using gruntwork-install to install a module from the gruntwork-install repo with branch as ref"
 gruntwork-install --module-name "dummy-module" --repo "https://github.com/gruntwork-io/gruntwork-installer" --ref "for-testing-dont-delete" --module-param "file-to-cat=$SCRIPT_DIR/integration-test.sh"
 
