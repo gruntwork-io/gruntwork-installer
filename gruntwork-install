@@ -119,6 +119,13 @@ function assert_env_var_not_empty {
   fi
 }
 
+function assert_auth_token_set {
+  if [[ -z "$GITHUB_OAUTH_TOKEN" && -z "$GITLAB_TOKEN" ]]; then
+    log_error "Repository is not public. Either GITHUB_OAUTH_TOKEN or GITLAB_TOKEN environment variable is required."
+    exit 1
+  fi
+}
+
 # Download the files of the given Script Module using fetch (https://github.com/gruntwork-io/fetch)
 function fetch_script_module {
   local -r module_name="$1"
@@ -349,8 +356,7 @@ function install_script_module {
   assert_is_installed fetch
 
   if ! repo_is_public "$repo"; then
-    log_info "Repository is not public. GITHUB_OAUTH_TOKEN environment variable is required."
-    assert_env_var_not_empty "GITHUB_OAUTH_TOKEN"
+    assert_auth_token_set
   fi
 
   if [[ ( -z "$module_name" && -z "$binary_name" ) || ( -n "$module_name" && -n "$binary_name" ) ]]; then
